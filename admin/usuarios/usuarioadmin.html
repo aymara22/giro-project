@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Usuarios</title>
+    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="/style/tablas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  </head>
+  <body>
+    <header>
+        <div class="logo-container">
+            <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>PUNTO GIRO</h1>
+            <h2>CONTROL DE STOCK</h2>
+        </div>
+    </header>
+    <nav>
+      <ul>
+          <li>
+              <a href="/admin/index.html">
+                  <i class="fas fa-home"></i>>
+              </a>
+          </li>
+          <li><a href="">Usuarios</a></li>
+      </ul>
+  </nav>
+    <br>
+    <br>
+    <br>
+    <table>
+      <tr>
+          <th colspan="5">Usuarios</th> <!-- Título principal que abarca las 5 columnas -->
+      </tr>
+      <tr>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Rol</th>
+          <th>Habilitado</th>
+          <th>Acciones</th>
+      </tr>
+      <tr>
+          <td>Juan</td>
+          <td>Pérez</td>
+          <td>Administrador</td>
+          <td>Sí</td>
+          <td class="actions">
+              <a href="eliminarUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"></a>
+              <a href="editarusuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar"></a>
+              <a href="visualizarusuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/visible--v1.png" alt="Ver Más Detalles"></a>
+          </td>
+      </tr>
+      <tr>
+          <td>María</td>
+          <td>Gómez</td>
+          <td>Usuario</td>
+          <td>No</td>
+          <td class="actions">
+              <a href="eliminarUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"></a>
+              <a href="editarUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar"></a>
+              <a href="verUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/visible--v1.png" alt="Ver Más Detalles"></a>
+          </td>
+      </tr>
+  </table>
+  <br>
+  <br>
+  <br>
+
+  <div class="enlace-container">
+    <a href="registrarusuario.html" class="registro-enlace">Registrar Usuario</a>
+</div>
+  
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+           <!-- <p>Diseñado por [Tu Nombre]</p> -->
+        </div>
+    </footer>
+  </body>
+</html>

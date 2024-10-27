@@ -1,0 +1,67 @@
+h2 {
+    text-align: center;
+}
+
+/* Estilo del formulario */
+form {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+input[type="text"], input[type="email"], input[type="number"], input[type="password"], select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Contenedor para los botones */
+.boton-container {
+    display: flex;
+    justify-content: center; /* Centra los botones horizontalmente */
+    gap: 10px; /* Espacio entre los botones */
+    margin-top: 20px; /* Espaciado superior */
+}
+
+/* Botón de Cancelar */
+.btn-cancelar {
+    background-color: rgb(250, 151, 151);
+    color: rgb(36, 36, 36);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-cancelar:hover {
+    background-color: rgb(235, 94, 94);
+}
+
+/* Botón de Registrar */
+.btn-registrar {
+    background-color: rgb(139, 243, 139);
+    color: rgb(36, 36, 36);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-registrar:hover {
+    background-color: rgb(98, 212, 98);
+}

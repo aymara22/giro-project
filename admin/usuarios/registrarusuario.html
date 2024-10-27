@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>registrarusuario</title>
+    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="/style/formularios.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  </head>
+  <body>
+    <header>
+        <div class="logo-container">
+            <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>PUNTO GIRO</h1>
+            <h2>CONTROL DE STOCK</h2>
+        </div>
+    </header>
+    <nav>
+      <ul>
+          <li>
+              <a href="/admin/index.html">
+                  <i class="fas fa-home"></i>>
+              </a>
+          </li>
+          <li><a href="usuarioadmin.html">Usuarios ></a></li>
+          <li><a href="">Registrar Usuario</a></li>
+      </ul>
+  </nav>
+    <br>
+    <br>
+
+        <h3>REGISTRO DE USUARIO</h3>
+        <div>
+        <!-- ID (oculto) -->
+        <input type="hidden" id="txtIDUSUARIO" name="id_usuario" value="0">
+    
+        <!-- Nombre Completo -->
+        <label for="txtNombreCompleto">Nombre Completo:</label>
+        <input type="text" id="txtNombreCompleto" name="nombre_completo" value="" required><br><br>
+            
+        <!-- DNI -->
+        <label for="txtDNIUsuario">DNI:</label>
+        <input type="text" id="txtDNIUsuario" name="dni" value="" required><br><br>
+    
+        <!-- Nombre de Usuario -->
+        <label for="txtNombreUsuario">Nombre de Usuario:</label>
+        <input type="text" id="txtNombreUsuario" name="nombre_usuario" value="" required><br><br>
+
+        <!-- Email -->
+        <label for="txtEmailUsuario">Email:</label>
+        <input type="email" id="txtEmailUsuario" name="email" value="" required><br><br>
+    
+        <!-- Tipo de Rol -->
+        <label for="txtTipoRolUsuario">Tipo de Rol:</label>
+        <select id="txtTipoRolUsuario" name="tipo_rol" required>
+            <option value="usuario">Usuario</option>
+            <option value="administrador">Administrador</option>
+        </select><br><br>
+    
+        <!-- Contraseña -->
+        <label for="txtContraseñaUsuario">Contraseña:</label>
+        <input type="password" id="txtContraseñaUsuario" name="password" required><br><br>
+    
+        <!-- Habilitado -->
+        <label for="habilitadoUsuario">Habilitado:</label>
+        <input type="radio" id="habilitadoSi" name="habilitado" value="si" required> Sí
+        <input type="radio" id="habilitadoNo" name="habilitado" value="no" required> No<br><br>
+    
+        <!-- Botones -->
+        <input type="submit" value="Registrar" id="btnRegistrarUsuario">
+        <input type="button" value="Cancelar" id="btnCancelarUsuario">
+    </div>
+       
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+           <!-- <p>Diseñado por [Tu Nombre]</p> -->
+        </div>
+    </footer>
+    <script src="controladores/registrar.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: auto;
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center; /* Alinea el texto al centro horizontalmente */
+    vertical-align: middle; /* Alinea el contenido verticalmente */
+    border: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.actions {
+    display: flex;
+    justify-content: center; /* Alinea los íconos horizontalmente al centro */
+    gap: 10px; /* Espacio entre los íconos */
+}
+
+.actions img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.actions img:hover {
+    transform: scale(1.1); /* Efecto hover */
+}
+
+/*ENLACE REGISTRAT USUSARIO*/
+/* Contenedor para centrar el enlace horizontalmente */
+.enlace-container {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    margin: 20px 0; /* Añade margen para separar del contenido superior */
+}
+
+/* Estilos solo para el enlace con la clase "registro-enlace" */
+.registro-enlace {
+    color: #0000FF; /* Color del enlace */
+    text-decoration: none; /* Sin subrayado */
+    font-weight: bold; /* Texto en negrita */
+    font-size: 1.2em; /* Tamaño de la letra más grande */
+    padding: 15px 30px; /* Más espacio alrededor del texto */
+    /*border: 2px solid #0000FF; /* Borde */
+    border-radius: 10px; /* Bordes redondeados */
+    background-color: #F4F4F4; /* Fondo del botón */
+    transition: background-color 0.3s ease; /* Efecto suave al pasar el ratón */
+}
+
+.registro-enlace:hover {
+    background-color: #8888fc; /* Fondo azul al pasar el ratón */
+    color: #FFFFFF; /* Color de texto blanco al pasar el ratón */
+}

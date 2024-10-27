@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>editarusuario</title>
+    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="/style/formulario2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  </head>
+
+  <body>
+    <header>
+      <div class="logo-container">
+          <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+      </div>
+      <div class="title-container">
+          <h1>PUNTO GIRO</h1>
+          <h2>CONTROL DE STOCK</h2>
+      </div>
+  </header>
+  <nav>
+    <ul>
+        <li>
+            <a href="/admin/index.html">
+                <i class="fas fa-home"></i>>
+            </a>
+        </li>
+        <li><a href="usuarioadmin.html">Usuarios ></a></li>
+        <li><a href="">Editar Usuario</a></li>
+    </ul>
+  </nav>
+  <br>
+  <br>
+  <h2>Editar Usuario</h2>
+
+    <form id="registroUsuarioForm">
+        <!-- Campo Nombre Completo -->
+        <label for="nombreCompleto">Nombre Completo:</label>
+        <input type="text" id="nombreCompleto" name="nombreCompleto" required>
+
+        <!-- Campo Nombre de Usuario -->
+        <label for="nombreUsuario">Nombre de Usuario:</label>
+        <input type="text" id="nombreUsuario" name="nombreUsuario" required>
+
+        <!-- Campo DNI -->
+        <label for="dni">DNI:</label>
+        <input type="number" id="dni" name="dni" required>
+
+        <!-- Campo Email -->
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <!-- Campo Tipo de Rol -->
+        <label for="tipoRol">Tipo de Rol:</label>
+        <select id="tipoRol" name="tipoRol" required>
+            <option value="usuario">Usuario</option>
+            <option value="administrador">Administrador</option>
+        </select>
+
+        <!-- Campo Contraseña -->
+        <label for="contraseña">Contraseña:</label>
+        <input type="password" id="contraseña" name="contraseña" required>
+
+        <!-- Campo Habilitado -->
+        <label for="habilitado">Habilitado:</label>
+        <select id="habilitado" name="habilitado" required>
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+        </select>
+
+        <!-- Contenedor para los botones -->
+        <div class="boton-container">
+            <!-- Botón de Cancelar -->
+            <button type="reset" class="btn-cancelar">Cancelar</button>
+
+            <!-- Botón de Registrar -->
+            <button type="submit" class="btn-registrar">Editar</button>
+        </div>
+    </form>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+  <footer>
+    <div class="footer-content">
+        <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+       <!-- <p>Diseñado por [Tu Nombre]</p> -->
+    </div>
+</footer>
+  </body>
+</html>

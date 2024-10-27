@@ -1,0 +1,86 @@
+h2 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+form {
+    max-width: 800px; /* Ancho más grande del formulario */
+    width: 100%; /* Para que se ajuste bien al tamaño disponible */
+    margin: 0 auto;
+    padding: 30px;
+    border: 2px solid #444; /* Bordes más gruesos */
+    border-radius: 15px; /* Bordes redondeados */
+    background-color: #e0e6f7;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Sombra para más solidez */
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+input[type="text"], input[type="email"], input[type="password"], select {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    padding: 12px;
+    border: 2px solid #888; /* Bordes más gruesos */
+    border-radius: 8px; /* Bordes redondeados */
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: #fff;
+}
+
+input[type="radio"] {
+    margin-right: 8px;
+}
+
+/* Contenedor para los botones */
+.boton-container {
+    display: flex; /* Alinea los botones horizontalmente */
+    justify-content: center; /* Centra los botones horizontalmente */
+    gap: 10px; /* Espacio entre los botones */
+    margin-top: 20px; /* Espaciado superior */
+}
+
+/* Botón de Cancelar */
+.btn-cancelar {
+    background-color: rgb(250, 151, 151); /* Color de fondo rojo claro */
+    color: rgb(36, 36, 36); /* Color del texto */
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    outline: none; /* Elimina el borde al hacer clic */
+    transition: background-color 0.3s ease; /* Efecto suave al cambiar el color */
+}
+
+.btn-cancelar:hover {
+    background-color: rgb(235, 94, 94); /* Color más oscuro al pasar el cursor */
+    outline: none; /* Elimina el borde negro al hacer hover */
+}
+
+/* Botón de Registrar */
+.btn-registrar {
+    background-color: rgb(139, 243, 139); /* Color de fondo verde claro */
+    color: rgb(36, 36, 36); /* Color del texto */
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    outline: none; /* Elimina el borde al hacer clic */
+    transition: background-color 0.3s ease; /* Efecto suave al cambiar el color */
+}
+
+.btn-registrar:hover {
+    background-color: rgb(98, 212, 98); /* Color más oscuro al pasar el cursor */
+    outline: none; /* Elimina el borde negro al hacer hover */
+}
+
+
+
+

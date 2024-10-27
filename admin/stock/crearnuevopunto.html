@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>crearnuevopunto</title>
+    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="/style/formularios.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Estilo general del formulario */
+        form {
+            max-width: 400px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        /* Botones alineados y con colores */
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        button[type="submit"] {
+            background-color: green;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            width: 48%;
+        }
+
+        button[type="reset"] {
+            background-color: red;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            width: 48%;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+
+  </head>
+
+  <body>
+    <header>
+        <div class="logo-container">
+            <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>PUNTO GIRO</h1>
+            <h2>CONTROL DE STOCK</h2>
+        </div>
+    </header>
+    <nav>
+      <ul>
+          <li>
+              <a href="/admin/index.html">
+                  <i class="fas fa-home"></i>>
+              </a>
+          </li>
+          <li><a href="stockadmin.html">stock ></a></li>
+          <li><a href="">nuevo punto</a></li>
+      </ul>
+  </nav>
+  <br>
+  <br>
+  <!DOCTYPE html>
+<html lang="es">
+
+    <h2>Formulario de Registro de Punto de Control</h2>
+    <form action="/guardar_punto" method="POST" enctype="multipart/form-data">
+        <!-- Nombre del Punto -->
+        <label for="nombrePunto">Nombre del Punto:</label>
+        <input type="text" id="nombrePunto" name="nombrePunto" required>
+        <br><br>
+
+        <!-- Ubicación del Punto -->
+        <label for="ubicacionPunto">Ubicación del Punto:</label>
+        <input type="text" id="ubicacionPunto" name="ubicacionPunto" required>
+        <br><br>
+
+        <!-- Responsable del Punto -->
+        <label for="responsable">Responsable del Punto:</label>
+        <input type="text" id="responsable" name="responsable" required>
+        <br><br>
+
+        <!-- Estado (Activo/Inactivo) -->
+        <label for="estado">Estado:</label>
+        <select id="estado" name="estado" required>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+        </select>
+        <br><br>
+
+        <!-- Logo -->
+        <label for="logo">Imagen del Logo:</label>
+        <input type="file" id="logo" name="logo" accept="image/*" required>
+        <br><br>
+
+        <!-- Botones de Enviar y Cancelar -->
+        <button type="submit">Registrar Punto</button>
+        <button type="reset">Cancelar</button>
+    </form>
+
+    <br>
+    <br>
+    <br>
+    <br>
+  <footer>
+    <div class="footer-content">
+        <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+       <!-- <p>Diseñado por [Tu Nombre]</p> -->
+    </div>
+</footer>
+  </body>
+</html>

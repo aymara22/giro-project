@@ -1,0 +1,202 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 5px 15px; /* Reducido */
+    color: rgb(24, 24, 24);
+    height: 60px; /* Altura más pequeña */
+}
+
+.logo-container {
+    width: 70px; /* Reducido */
+}
+
+.logo {
+    width: 100%;
+    height: auto;
+}
+
+.title-container {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.title-container h1 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    font-size: 1.5em; /* Tamaño de letra reducido */
+    margin: 0; /* Eliminar márgenes */
+}
+
+.title-container h2 {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    font-size: 1em; /* Tamaño de letra reducido */
+    margin: 0; /* Eliminar márgenes */
+    letter-spacing: 1px; /* Reducir el espaciado entre letras */
+}
+
+
+/*Formularioooo*/
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.login-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px; /* Ancho máximo para limitar el tamaño en pantallas grandes */
+}
+
+
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.forgot-password {
+    display: block;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    color: #3498db;
+    text-align: right;
+    text-decoration: none;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    font-weight: 600;
+    color: rgb(24, 24, 24);
+    background-color: #d7e0f9;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #1a242f;
+}
+  
+
+/*PIE DE PAGINA*/
+
+footer {
+    background-color: #ffffff;
+    color: rgb(24, 24, 24);
+    text-align: center;
+    padding: 20px 0;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+.footer-content {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+footer p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+/*RUTA DE NAVEGACION */
+nav {
+    background-color: #eef5fa;
+    color: #000000;
+    padding: 10px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+nav ul li {
+    margin-right: 20px;
+}
+
+nav a {
+    color: #000000;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Estilo para el ícono de Font Awesome */
+nav a .fas {
+    margin-right: 8px;
+    color: black; /* Cambia el color del ícono a negro */
+}
+
+
+
+/*++++++++++++++++++++++*/
+
+input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/*+++++++++++++++++++++++++++*/
+
+h2 {
+    font-family: 'Lato', sans-serif;  /* Cambiar la fuente a Lato */
+    text-align: center;               /* Centrar el texto */
+    font-weight: normal;              /* Quitar la negrita */
+    color: #000000;                   /* Cambiar el color */
+}
+
