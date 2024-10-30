@@ -127,7 +127,7 @@ footer {
     color: rgb(24, 24, 24);
     text-align: center;
     padding: 20px 0;
-    position: fixed;
+    position: relative; /* Cambiado de fixed a relative */
     width: 100%;
     bottom: 0;
 }
@@ -141,6 +141,14 @@ footer p {
     margin: 5px 0;
     font-size: 0.9em;
 }
+
+/* Espaciado adicional para asegurar que el pie de página esté al final de la página */
+body::after {
+    content: "";
+    display: block;
+    height: 50px; /* Ajusta según la altura del footer */
+}
+
 
 /*RUTA DE NAVEGACION */
 nav {

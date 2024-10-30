@@ -1,0 +1,76 @@
+/* Estilo general del formulario con borde */
+form {
+    width: 500px; /* Establece un ancho fijo */
+    max-width: 100%; /* Asegura que el formulario no supere el ancho de la pantalla */
+    margin: auto;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+select, input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+}
+
+/* Estilo para el contenedor de botones */
+.button-container, .button-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+/* Botones */
+button {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+button.confirmar {
+    background-color: green;
+    width: 48%;
+}
+
+button.cancelar, button.cancelar-detalle {
+    background-color: red;
+    width: 48%;
+}
+
+button.añadir {
+    background-color: blue;
+    color: white;
+    padding: 8px 16px;
+}
+
+/* Tabla de insumos */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #f2f2f2;
+    text-align: center;
+}
+
+td {
+    text-align: center;
+}
+

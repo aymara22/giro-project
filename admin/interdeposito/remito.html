@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/style/index.css">
     <link rel="stylesheet" href="/style/indexadmin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/style/formulariointerde.css">
   </head>
 
   <body>
@@ -30,12 +31,58 @@
                   <i class="fas fa-home"></i>>
               </a>
           </li>
-          <li><a href="">interdeposito</a></li>
+          <li><a href="/admin/interdeposito/interdepoadmin.html">interdeposito ></a></li>
+          <li><a href="">remito</a></li>
       </ul>
   </nav>
 <br>
 <br>
+<h2>Formulario de Remito</h2>
+<form id="remitoForm">
+    <!-- Número de Remito -->
+    <label for="numeroRemito">Número de Remito:</label>
+    <input type="text" id="numeroRemito" name="numeroRemito" required>
+    <br>
+    <br>
+    <br>
 
+    <!-- Tabla de Insumos -->
+    <table id="tablaInsumos">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Cantidad</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Fila de ejemplo, se pueden agregar filas adicionales según sea necesario -->
+            <tr>
+                <td>1</td>
+                <td>Insumo Ejemplo</td>
+                <td><input type="number" name="cantidad[]" min="1" required></td>
+                <td>
+                    <select name="estado[]">
+                        <option value="listo">Listo</option>
+                        <option value="roto">Roto</option>
+                        <option value="no_apto">No Apto</option>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Botones Confirmar y Cancelar -->
+    <div class="button-container">
+        <button type="submit" class="confirmar">Confirmar</button>
+        <button type="reset" class="cancelar">Cancelar</button>
+    </div>
+</form>
+<br>
+<br>
+<br>
+<br>
 
 <footer>
     <div class="footer-content">
