@@ -1,96 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>editarusuario</title>
-    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style/index.css">
-    <link rel="stylesheet" href="/style/formulario2.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  </head>
 
-  <body>
-    <header>
-      <div class="logo-container">
-          <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
-      </div>
-      <div class="title-container">
-          <h1>PUNTO GIRO</h1>
-          <h2>CONTROL DE STOCK</h2>
-      </div>
+<head>
+  <title>editarusuario</title>
+  <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/style/index.css">
+  <link rel="stylesheet" href="/style/formulario2.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+  <header>
+    <div class="logo-container">
+      <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+    </div>
+    <div class="title-container">
+      <h1>PUNTO GIRO</h1>
+      <h2>CONTROL DE STOCK</h2>
+    </div>
+    <div>
+      <button type="button" class="logOut">cerrar sesion</button>
+    </div>
   </header>
   <nav>
     <ul>
-        <li>
-            <a href="/admin/index.html">
-                <i class="fas fa-home"></i>>
-            </a>
-        </li>
-        <li><a href="usuarioadmin.html">Usuarios ></a></li>
-        <li><a href="">Editar Usuario</a></li>
+      <li>
+        <a href="/admin/index.html" class="volver">
+          <i class="fas fa-home"></i>>
+        </a>
+      </li>
+      <li><a href="usuarioadmin.html" class="volver">Usuarios ></a></li>
+      <li><a href="">Ver Usuario</a></li>
     </ul>
   </nav>
-  <br>
-  <br>
-  <h2>Editar Usuario</h2>
+  <div class="form-container">
+    <h2>Actualizar Usuario</h2>
 
-    <form id="registroUsuarioForm">
-        <!-- Campo Nombre Completo -->
-        <label for="nombreCompleto">Nombre Completo:</label>
-        <input type="text" id="nombreCompleto" name="nombreCompleto" required>
-
-        <!-- Campo Nombre de Usuario -->
-        <label for="nombreUsuario">Nombre de Usuario:</label>
-        <input type="text" id="nombreUsuario" name="nombreUsuario" required>
-
-        <!-- Campo DNI -->
-        <label for="dni">DNI:</label>
-        <input type="number" id="dni" name="dni" required>
-
-        <!-- Campo Email -->
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-
-        <!-- Campo Tipo de Rol -->
-        <label for="tipoRol">Tipo de Rol:</label>
-        <select id="tipoRol" name="tipoRol" required>
-            <option value="usuario">Usuario</option>
-            <option value="administrador">Administrador</option>
-        </select>
-
-        <!-- Campo Contraseña -->
-        <label for="contraseña">Contraseña:</label>
-        <input type="password" id="contraseña" name="contraseña" required>
-
-        <!-- Campo Habilitado -->
-        <label for="habilitado">Habilitado:</label>
-        <select id="habilitado" name="habilitado" required>
-            <option value="si">Sí</option>
-            <option value="no">No</option>
-        </select>
-
-        <!-- Contenedor para los botones -->
-        <div class="boton-container">
-            <!-- Botón de Cancelar -->
-            <button type="reset" class="btn-cancelar">Cancelar</button>
-
-            <!-- Botón de Registrar -->
-            <button type="submit" class="btn-registrar">Editar</button>
-        </div>
+    <form class="visualizarUsuarioForm">
+      <!-- Campo de Nombre Completo -->
+      <div class="form-group"></div>
+      <!-- Botón de Volver -->
     </form>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-  <footer>
-    <div class="footer-content">
+    <br><br><br><br><br>
+    <footer>
+      <div class="footer-content">
         <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
-       <!-- <p>Diseñado por [Tu Nombre]</p> -->
-    </div>
-</footer>
-  </body>
+      </div>
+    </footer>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    viewUser();
+    cleanLocalStoraged();
+    cerrarSesion();
+    validarSesion();
+  });
+
+  function cerrarSesion() {
+    let cerrarSesion = document.querySelector(".logOut")
+    cerrarSesion.addEventListener("click", function () {
+      localStorage.clear()
+      window.location.href = "../auth/login.html"
+    })
+  }
+
+  function validarSesion() {
+    let sesion = localStorage.getItem("isLoggedIn")
+    let userSession = localStorage.getItem("userSession")
+    if (!sesion || !userSession) {
+      window.location.href = "../auth/login.html"
+    }
+  }
+
+  async function editUserData() {
+    const btnEditar = await document.querySelector(".btn-registrar")
+    const btnCancelar = await document.querySelector(".btn-cancelar")
+
+    btnCancelar.addEventListener("click", async () => {
+      window.location.href = "usuarioadmin.html"
+    })
+
+    btnEditar.addEventListener("click", async () => {
+
+      const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¡Esta acción no se puede deshacer!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, actualizar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      let id = localStorage.getItem("usuarioId")
+
+
+      let nombre_completo = document.querySelector("#nombreCompleto").value;
+      let dni = document.querySelector("#dni").value;
+      let nombre_usuario = document.querySelector("#nombreUsuario").value;
+      let email = document.querySelector("#email").value;
+      let tipo_usuario = document.querySelector('select[name="tipoRol"]').value;
+      let activo = document.querySelector('input[name="habilitado"]:checked').value;
+
+      const usuarioData = {
+        nombre_completo,
+        dni,
+        nombre_usuario,
+        email,
+        tipo_usuario,
+        activo
+      };
+
+      // Si el usuario confirma, proceder a eliminar
+      if (result.isConfirmed) {
+        const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(usuarioData)
+        });
+        const responseData = await response.json();
+
+        if (responseData.success) {
+          Swal.fire(
+            'Actualizado!',
+            responseData.result_message,
+            'success'
+          ).then(() => {
+            window.location.href = "usuarioadmin.html"
+          });
+        } else {
+          Swal.fire(
+            'Error',
+            responseData.result_message || 'No se pudo actualizar la data del usuario.',
+            'error'
+          );
+        }
+      }
+    })
+
+  }
+
+  function cleanLocalStoraged() {
+    const btnVolver = document.querySelector(".volver");
+
+    if (btnVolver) {
+      btnVolver.addEventListener("click", () => {
+        localStorage.removeItem("usuarioId");
+      });
+    }
+  }
+
+
+  async function viewUser() {
+
+    let userForm = document.querySelector(".visualizarUsuarioForm")
+    try {
+      const id = localStorage.getItem("usuarioId")
+      console.log(id)
+      const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+      const divContent = document.querySelector(".form-group")
+      const user = result.result_data[0]
+      divContent.innerHTML = `
+                    <label for="nombreCompleto">Nombre Completo</label>
+                    <input type="text" id="nombreCompleto" value="${user.nombre_completo}">
+
+                    <label for="nombreCompleto">DNI</label>
+                    <input type="text" id="dni" value="${user.dni}">
+
+                    <label for="nombreCompleto">Nombre usuario</label>
+                    <input type="text" id="nombreUsuario" value="${user.nombre_usuario}" >
+
+                    <label for="tipoRol">Tipo de Rol:</label>
+                      <select id="tipoRol" name="tipoRol" required>
+                          <option value="ADMIN" ${user.tipo_usuario === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+                          <option value="VIEWER" ${user.tipo_usuario === 'VIEWER' ? 'selected' : ''}>VIEWER</option>
+                      </select>
+
+                    <label for="nombreCompleto">Nombre usuario</label>
+                    <input type="text" id="email" value="${user.email}">
+
+                    <label for="habilitadoUsuario">Activo:</label>
+                    <input type="radio" id="habilitadoSi" name="habilitado" value="true" ${user.activo == true ? 'checked' : ''}> Sí
+                    <input type="radio" id="habilitadoNo" name="habilitado" value="false" ${user.activo == false ? 'checked' : ''}> No
+                    <br><br>
+
+                    <div class="boton-container">
+                      <!-- Botón de Cancelar -->
+                      <button type="button" class="btn-cancelar">Cancelar</button>
+                
+                      <!-- Botón de Registrar -->
+                      <button type="button" class="btn-registrar">Editar</button>
+                    </div>
+
+                `;
+      editUserData();
+    } catch (error) {
+      console.log(`Se produjo un error: ${error.message}`);
+    }
+
+  }
+</script>
+
 </html>

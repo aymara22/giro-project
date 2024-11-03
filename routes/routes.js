@@ -1,925 +1,806 @@
 const express = require("express");
 const router = express.Router();
-const ConexionDB = require("../config/db")
+const pool = require("../config/db")
+const {validarUsuario} = require("../utils/utils")
+const bcrypt = require('bcrypt');
 
 
-router.get("/", (req, res) => {
-    res.send("Servidor funcionando correctamente");
-});
-
-router.get("/usuario/:ID", async (req, res) => {
-    const ID = req.params.ID;
-
-    let SQL = 'select * from usuario where usuarioid = $1';
-
-    let Resultado = '';
-
+router.post("/login", async (req, res) => {
+    const {nombre_usuario, password} = req.body
     try {
-        Resultado = await ConexionDB.query(SQL, [ID]);
+        if(!nombre_usuario || !password){
+            const error = new Error("Campos vacios");
+            error.statusCode = 401;
+            throw error;
+        }
+        const query = "SELECT * FROM usuario WHERE nombre_usuario = $1"
+        let usuario = await pool.query(query, [nombre_usuario]);
 
-        Salida = {
-            result_estado: 'ok',
-            result_message: 'usuario recuperado por ID',
-            result_rows: Resultado.rowCount,
-            result_proceso: 'GET USUARIO POR ID',
-            result_data: Resultado.rows[0]
-        };
-
+        if (usuario.rows.length < 1) {
+            const error = new Error("Usuario inexistente");
+            error.statusCode = 404;
+            throw error;
+        }
+        const isMatch = await bcrypt.compare(password, usuario.rows[0].password);
+        if (isMatch) {
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'Inicio de sesion exitoso',
+                result_rows: usuario.rowCount,
+                result_proceso: 'GET USUARIO POR ID',
+                result_data: usuario.rows[0],
+            })
+        } else {
+            const error = new Error("Datos incorrectos!");
+            error.statusCode = 401;
+            throw error;
+        }
     } catch (error) {
-        Salida = {
-            result_estado: 'error',
-            result_message: error.message,
-            result_rows: 0,
-            result_proceso: 'GET USUARIO POR ID',
-            result_data: ''
-        };
+        res.status(error.statusCode || 500).json(
+            {   success: false,
+                status: error.statusCode || 500,
+                result_message: error.message,
+                result_rows: 0,
+                result_proceso: 'LOGIN',
+                result_data: []
+            }
+        )
     }
-    res.json(Salida);
+
 });
 
+// REST USERS 
 
-/**********************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE COMPLETO USUARIO) */
-/**********************************************************************************************/
-/*router.get("/nombrecompletousuario/:nombrecompletousuario",async(req,res)=>
-    {
-        const nombrecompletousuario = req.params.nombrecompletousuario;
-    
-        let SQL = 'select * from usuario where nombrecompletousuario = $1';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[nombrecompletousuario]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'usuario recuperado por nombrecompletousuario',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET COMPRA POR NOMBRE COMPLETO USUARIO',
-                result_data:Resultado.rows[0]
-            }          
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET USUARIO POR  NOMBRE COMPLETO USUARIO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
+router.get("/usuario/:id", async (req, res, next) => {
+    const id = req.params.id;
 
-
-/**********************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (DNI USUARIO) */
-/**********************************************************************************/
-/*router.get("/dniusuario/:dniusuario",async(req,res)=>
-    {
-        const usuariocuit = req.params.dniusuario;
-    
-        let SQL = 'select * from usuario where dniusuario = $1';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[dniusuario]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'usuario recuperado por dniusuario',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET COMPRA POR  USUARIO DNI',
-                result_data:Resultado.rows[0]
-            }          
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET USUARIO POR  USUARIO DNI',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })    
-
-
-/*************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE USUARIO) */
-/*************************************************************************************/
-/*router.get("/nombreusuario/",async(req,res)=>
-    {
-        const NOMBRE = req.query.nombre;
-    
-        let SQL = 'select * from usuario where nombreusuario like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${NOMBRE}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Usuario recuperado por Nombre Usuario',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET USUARIO POR NOMBRE USUARIO',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET USUARIO POR NOMBRE USUARIO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-    
-/************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (GMAIL USUARIO) */
-/************************************************************************************/
-/*router.get("/gmailusuario/", async (req, res) => {
-    const gmailusuario = req.query.gmailusuario;
-
-    let SQL = 'select * from usuario where gmailusuario like $1 limit 50';
-
-    let Resultado = '';
-
+    let query = 'select * from usuario where id = $1';
     try {
-        Resultado = await ConexionDB.query(SQL, [`%${gmailusuario}%`]);
-
-        Salida = {
-            result_estado: 'ok',
-            result_message: 'Libro recuperado por gmail',
-            result_rows: Resultado.rowCount,
-            result_proceso: 'GET LIBRO POR GMAIL',
-            result_data: Resultado.rows
-        };
-
-    } catch (error) {
-        Salida = {
-            result_estado: 'error',
-            result_message: error.message,
-            result_rows: 0,
-            result_proceso: 'GET LIBRO POR GMAIL',
-            result_data: ''
-        };
-    }
-    res.json(Salida);
-});
-
-
-/***********************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (TIPO USUARIO) */
-/***********************************************************************************/
-/*router.get("/tipousuario/",async(req,res)=>
-    {
-        const tipousuario = req.params.tipousuario;
-    
-        let SQL = 'select * from usuario where tipoususrio = $1';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[tipousuario]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'usuario recuperado por tipo usuario',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET COMPRA POR TIPO USUARIO ',
-                result_data:Resultado.rows[0]
-            }          
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET USUARIO POR TIPO USUARIO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })    
-    
-
-/*****************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CONTRASEÑA USUARIO) */
-/*****************************************************************************************/
-/*router.get("/contraseña/",async(req,res)=>
-    {
-        const contraseña = req.params.contraseña;
-    
-        let SQL = 'select * from usuario where contraseña = $1';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[contraseña]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'usuario recuperado por contraseña',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET COMPRA POR  USUARIO CONTRASEÑA',
-                result_data:Resultado.rows[0]
-            }          
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET USUARIO POR  USUARIO CONTRASEÑA',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })    
-
-
-/**********************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (HABILITADO USUARIO) */
-/**********************************************************************************************/
-/*router.get("/habilitado/",async(req,res)=>
-    {
-        const habilitado = req.params.habilitado;
-    
-        let SQL = 'select * from usuario where habilitado = $1';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[habilitado]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'usuario recuperado por habilitado',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET COMPRA POR  USUARIO HABILITADO',
-                result_data:Resultado.rows[0]
-            }          
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET USUARIO POR  USUARIO HABILITADO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })    
-
-
-
-    //************************ END POINT DE REGISTRAR INSUMO *************************/
-
-
-
-
-/********************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (ID INSUMO) */
-/********************************************************************************/
-
-router.get("/insumo/:ID",async(req,res)=>
-    {
-        const ID = req.params.ID;
-    
-        let SQL = 'select * from insumo where idinsumo = $1';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[ID]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'insumo recuperado por ID',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET INSUMO POR ID',
-                result_data:Resultado.rows[0] 
-            }          
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET INSUMO POR ID',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-    
-
-/***************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CATEGORIA INSUMO) */
-/***************************************************************************************/
-
-router.get("/categoria/",async(req,res)=>
-    {
-        const CATEGORIA = req.query.categoria;
-    
-        let SQL = 'select * from insumo where categoria like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${CATEGORIA}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Insumo recuperado por categoria',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET INSUMO POR CATEGORIA',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET INSUMO POR CATEGORIA',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-/************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE INSUMO) */
-/************************************************************************************/
-
-router.get("/nombreinsumo/",async(req,res)=>
-{
-    const NOMBRE = req.query.nombre;
-
-    let SQL = 'select * from insumo where nombreinsumo like $1 limit 50';
-
-    let Resultado = '';
-
-    try {
+        let usuario = await pool.query(query, [id]);
         
-        Resultado = await ConexionDB.query(SQL,[`%${NOMBRE}%`]);
+        if (usuario.rows.length < 1) {
+            const error = new Error("No se ha encontrado un usuario con el id proporcionado");
+            error.statusCode = 404;
+            throw error;
+        }
 
-        Salida = 
-        {
-            result_estado:'ok',
-            result_message:'Insumo recuperado por Nombre',
-            result_rows:Resultado.rowCount,
-            result_proceso:'GET INSUMO POR NOMBRE',
-            result_data:Resultado.rows
-        }        
-
-    } catch (error) 
-    {
-        Salida = 
-        {
-            result_estado:'error',
-            result_message:error.message,
-            result_rows:0,
-            result_proceso:'GET INSUMO POR NOMBRE ',
-            result_data:''
-        }        
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'usuario recuperado por ID',
+            result_rows: usuario.rowCount,
+            result_proceso: 'GET USUARIO POR ID',
+            result_data: usuario.rows,
+        })
+    } catch (error) {
+        
+        res.status(error.statusCode || 500).json(
+            {   success: false,
+                status: error.statusCode || 500,
+                result_message: error.message,
+                result_rows: 0,
+                result_proceso: 'GET USUARIO POR ID',
+                result_data: []
+            }
+        )
+        
     }
-    res.json(Salida);
-})
+});
 
+router.get("/usuario/", async (req, res) => {
 
+    let SQL = 'select id, nombre_completo, nombre_usuario, tipo_usuario, activo from usuario';
 
+    try {
+        users = await pool.query(SQL);
 
-/*****************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (DESCRIPCION INSUMO) */
-/*****************************************************************************************/
+        if (users.rows.length == 0) {
+            const error = new Error("No se encontraron usuarios por mostrar");
+            error.statusCode = 404;
+            throw error;
+        }else{
 
-router.get("/descripcion/",async(req,res)=>
-    {
-        const descripcion = req.query.descripcion;
-    
-        let SQL = 'select * from insumo where descripcion like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${descripcion}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Insumo recuperado por Descripcion',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET INSUMO POR DESCRIPCION',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET INSUMO POR DESCRIPCION',
-                result_data:''
-            }        
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'LISTA DE USUARIOS',
+                result_rows: users.rowCount,
+                result_proceso: 'GET USUARIO POR ID',
+                result_data: users.rows
+            })
         }
-        res.json(Salida);
-    })
 
-
-/**************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CANTIDAD INSUMO) */
-/**************************************************************************************/
-
-router.get("/cantidad/",async(req,res)=>
-    {
-        const cantidad = req.query.cantidad;
-    
-        let SQL = 'select * from insumo where cantidad like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${cantidad}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Insumo recuperado por cantidad',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET INSUMO POR CANTIDAD',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET INSUMO POR CANTIDAD',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-
-    //************************ END POINT DE MOVIMIENTO *************************/
-
-/************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (ID MOVIMIENTO) */
-/************************************************************************************/
-
-router.get("/idmovimiento/:ID",async(req,res)=>
-    {
-        const ID = req.params.ID;
-    
-        let SQL = 'select * from movimiento where idmovimiento = $1';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[ID]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'movimiento recuperado por ID',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR ID',
-                result_data:Resultado.rows[0] 
-            }          
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR ID',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-/**************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (TIPO MOVIMIENTO) */
-/***************************************************************************************/
-
-
-router.get("/tipomovimiento/",async(req,res)=>
-    {
-        const tipomovimiento = req.query.tipomovimiento;
-    
-        let SQL = 'select * from movimiento where tipomovimiento like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${tipomovimiento}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por tipo',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR TIPO',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR TIPO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-/********************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (FECHA/HORA MOVIMIENTO) */
-/********************************************************************************************/
-
-router.get("/fechahora/",async(req,res)=>
-    {
-        const fechahora = req.query.fechahora;
-    
-        let SQL = 'select * from movimiento where fechahora like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${fechahora}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por fecha y hora',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR FECHA Y HORA',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR FECHA Y HORA',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-
-/*********************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (OBSERVACION MOVIMIENTO) */
-/*********************************************************************************************/
-
-router.get("/observacion /",async(req,res)=>
-    {
-        const observacion = req.query.observacion;
-    
-        let SQL = 'select * from movimiento where observacion like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${observacion}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por observacion',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR OBSERVACION',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR OBSERVACION',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-
-/******************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (EMPLEADO MOVIMIENTO) */
-/******************************************************************************************/
-
-router.get("/empleado/",async(req,res)=>
-    {
-        const empleado = req.query.empleado;
-    
-        let SQL = 'select * from movimiento where empleado like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${empleado}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por empleado',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR EMPLEADO',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR EMPLEADO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-
-/****************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (ESTADO MOVIMIENTO) */
-/****************************************************************************************/
-
-router.get("/estado/",async(req,res)=>
-    {
-        const estado = req.query.estado;
-    
-        let SQL = 'select * from movimiento where estado like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${estado}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por estado',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR ESTADO',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR ESTADO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-
-/********************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (AUTORIZADO MOVIMIENTO) */
-/********************************************************************************************/
-
-router.get("/autorizacion/",async(req,res)=>
-    {
-        const autorizacion = req.query.autorizacion;
-    
-        let SQL = 'select * from movimiento where autorizacion like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${autorizacion}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por autorizacion',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR AUTORIZACION',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR AUTORIZACION',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-/*****************************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE DESTINATARIO MOVIMIENTO) */
-/*****************************************************************************************************/
-
-router.get("/nombredestinatario/",async(req,res)=>
-    {
-        const nombredestinatario = req.query.nombredestinatario;
-    
-        let SQL = 'select * from movimiento where nombredestinatario like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${nombredestinatario}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por nombre destinatario',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR NOMBRE DESTINATARIO',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR NOMBRE DESTINATARIO',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-/*******************************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (TELEFONO DESTINATARIO MOVIMIENTO) */
-/*******************************************************************************************************/
-
-router.get("/telefonodestinatario/",async(req,res)=>
-    {
-        const telefonodestinatario = req.query.telefonodestinatario;
-    
-        let SQL = 'select * from movimiento where telefonodestinatario like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${telefonodestinatario}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Movimiento recuperado por telefono destinatario',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET MOVIMIENTO POR TELEFONO DESTINATARIO',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET MOVIMIENTO POR TELEFONO DESTINATARIO ',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
-
-/*****************************************************************************************/
-/* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (MENSAJE MOVIMIENTO) */
-/*****************************************************************************************/
-
-
-
-
-////////////////////////////////////POST///////////////////////////////////////////////////
-
-/************************************************************************************/
-/* DECIMOCTAVO => END POINT => Servicio WEB => Servicio REST => POST por USUARIO */
-/************************************************************************************/
-
-//http://localhost:3000/usuario
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET ALL USERS',
+            result_data: []
+        })
+    }
+});
 
 router.post("/usuario/",async(req,res)=>
 {
-    const {nombrecompletousuario,dniusuario,nombreusuario,gmailusuario,tipousuario,contraseña,habilitado} = req.body;
-
-    let SQL = 'insert into usuario (nombrecompletousuario,dniusuario,nombreusuario,gmailusuario,tipousuario,contraseña,habilitado) values ($1,$2,$3,$4,$5,$6,$7) returning *';
-
-    let Resultado = '';
+    const {nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo} = req.body;
+    const validacion = validarUsuario(req.body)
 
     try {
-        
-        Resultado = await ConexionDB.query(SQL,[nombrecompletousuario,dniusuario,nombreusuario,gmailusuario,tipousuario,contraseña,habilitado]);
+        if(validacion.success === false){
+            const error = new Error(validacion.error);
+            error.statusCode = 400;
+            throw error;
+        }
+    
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        Salida = 
-        {
-            result_estado:'ok',
-            result_message:'Usuario Insertado',
-            result_rows:Resultado.rowCount,
+        let query = 'INSERT INTO usuario (nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo) values ($1,$2,$3,$4,$5,$6,$7) returning *';
+        user = await pool.query(query ,[nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,hashedPassword , activo]);
+
+        res.json({
+            success:true,
+            status: 200,
+            result_message:'Usuario guardado de forma exitosa!',
+            result_rows:user.rowCount,
             result_proceso:'POST USUARIO',
-            result_data:Resultado.rows[0]
-        }          
+            result_data:user.rows[0]
+        })          
 
-    } catch (error) 
-    {
-        Salida = 
-        {
-            result_estado:'error',
-            result_message:error.message,
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success:false,
+            status: error.statusCode || 500,
+            result_message: error.message,
             result_rows:0,
-            result_proceso:'POST ',
+            result_proceso:'POST',
             result_data:''
-        }        
+        })   
     }
-    res.json(Salida);
 })
+
+router.put('/usuario/:id', async (req, res) => {
+    const { id } = req.params;
+    const campos = req.body; 
+
+    let query = 'UPDATE usuario SET ';
+    const valores = [];
+    let contador = 1; 
+
+    for (const campo in campos) {
+        if (campos[campo] !== undefined) { 
+            query += `${campo} = $${contador}, `;
+            valores.push(campos[campo]);
+            contador++;
+        }
+    }
+
+    query = query.slice(0, -2); // Remueve la última coma
+    query += ` WHERE id = $${contador} RETURNING *`;
+    valores.push(id);
+
+    try {
+        const result = await pool.query(query, valores);
+
+        if (result.rowCount === 0) {
+            const error = new Error('No se encontró el usuario para actualizar');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        res.json({
+            success: true,
+            result_message: 'Usuario actualizado de forma exitosa!',
+            result_rows: result.rowCount,
+            result_proceso: 'PUT ACTUALIZAR USUARIO',
+            result_data: result.rows[0],
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'PUT ACTUALIZAR USUARIO',
+            result_data: '',
+        });
+    }
+});
+
+
+router.delete('/usuario/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Ejecutamos la consulta DELETE en PostgreSQL
+        const result = await pool.query('DELETE FROM usuario WHERE id = $1 RETURNING *', [id]);
+
+        // Si no se encontró el usuario para eliminar, enviamos un error
+        if (result.rowCount === 0) {
+            const error = new Error('No se encontró el usuario para eliminar');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        // Si se elimina exitosamente, enviamos la respuesta
+        res.json({
+            success: true,
+            result_message: 'Usuario eliminado de forma exitosa!',
+            result_rows: result.rowCount,
+            result_proceso: 'DELETE ELIMINAR USUARIO',
+            result_data: result.rows[0], // Retornamos el usuario eliminado como confirmación
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'DELETE ELIMINAR USUARIO',
+            result_data: '',
+        });
+    }
+});
+
+
+
+
+// router.get("/insumo/:ID",async(req,res)=>
+//     {
+//         const ID = req.params.ID;
+    
+//         let SQL = 'select * from insumo where idinsumo = $1';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[ID]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'insumo recuperado por ID',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET INSUMO POR ID',
+//                 result_data:Resultado.rows[0] 
+//             }          
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET INSUMO POR ID',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+    
+
+// /***************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CATEGORIA INSUMO) */
+// /***************************************************************************************/
+
+// router.get("/categoria/",async(req,res)=>
+//     {
+//         const CATEGORIA = req.query.categoria;
+    
+//         let SQL = 'select * from insumo where categoria like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${CATEGORIA}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Insumo recuperado por categoria',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET INSUMO POR CATEGORIA',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET INSUMO POR CATEGORIA',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+// /************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE INSUMO) */
+// /************************************************************************************/
+
+// router.get("/nombreinsumo/",async(req,res)=>
+// {
+//     const NOMBRE = req.query.nombre;
+
+//     let SQL = 'select * from insumo where nombreinsumo like $1 limit 50';
+
+//     let Resultado = '';
+
+//     try {
+        
+//         Resultado = await pool.query(SQL,[`%${NOMBRE}%`]);
+
+//         Salida = 
+//         {
+//             result_estado:'ok',
+//             result_message:'Insumo recuperado por Nombre',
+//             result_rows:Resultado.rowCount,
+//             result_proceso:'GET INSUMO POR NOMBRE',
+//             result_data:Resultado.rows
+//         }        
+
+//     } catch (error) 
+//     {
+//         Salida = 
+//         {
+//             result_estado:'error',
+//             result_message:error.message,
+//             result_rows:0,
+//             result_proceso:'GET INSUMO POR NOMBRE ',
+//             result_data:''
+//         }        
+//     }
+//     res.json(Salida);
+// })
+
+
+
+
+// /*****************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (DESCRIPCION INSUMO) */
+// /*****************************************************************************************/
+
+// router.get("/descripcion/",async(req,res)=>
+//     {
+//         const descripcion = req.query.descripcion;
+    
+//         let SQL = 'select * from insumo where descripcion like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${descripcion}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Insumo recuperado por Descripcion',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET INSUMO POR DESCRIPCION',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET INSUMO POR DESCRIPCION',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+
+// /**************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CANTIDAD INSUMO) */
+// /**************************************************************************************/
+
+// router.get("/cantidad/",async(req,res)=>
+//     {
+//         const cantidad = req.query.cantidad;
+    
+//         let SQL = 'select * from insumo where cantidad like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${cantidad}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Insumo recuperado por cantidad',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET INSUMO POR CANTIDAD',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET INSUMO POR CANTIDAD',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+
+//     //************************ END POINT DE MOVIMIENTO *************************/
+
+// /************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (ID MOVIMIENTO) */
+// /************************************************************************************/
+
+// router.get("/idmovimiento/:ID",async(req,res)=>
+//     {
+//         const ID = req.params.ID;
+    
+//         let SQL = 'select * from movimiento where idmovimiento = $1';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[ID]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'movimiento recuperado por ID',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR ID',
+//                 result_data:Resultado.rows[0] 
+//             }          
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR ID',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+// /**************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (TIPO MOVIMIENTO) */
+// /***************************************************************************************/
+
+
+// router.get("/tipomovimiento/",async(req,res)=>
+//     {
+//         const tipomovimiento = req.query.tipomovimiento;
+    
+//         let SQL = 'select * from movimiento where tipomovimiento like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${tipomovimiento}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por tipo',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR TIPO',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR TIPO',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+// /********************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (FECHA/HORA MOVIMIENTO) */
+// /********************************************************************************************/
+
+// router.get("/fechahora/",async(req,res)=>
+//     {
+//         const fechahora = req.query.fechahora;
+    
+//         let SQL = 'select * from movimiento where fechahora like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${fechahora}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por fecha y hora',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR FECHA Y HORA',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR FECHA Y HORA',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+
+// /*********************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (OBSERVACION MOVIMIENTO) */
+// /*********************************************************************************************/
+
+// router.get("/observacion /",async(req,res)=>
+//     {
+//         const observacion = req.query.observacion;
+    
+//         let SQL = 'select * from movimiento where observacion like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${observacion}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por observacion',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR OBSERVACION',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR OBSERVACION',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+
+// /******************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (EMPLEADO MOVIMIENTO) */
+// /******************************************************************************************/
+
+// router.get("/empleado/",async(req,res)=>
+//     {
+//         const empleado = req.query.empleado;
+    
+//         let SQL = 'select * from movimiento where empleado like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${empleado}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por empleado',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR EMPLEADO',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR EMPLEADO',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+
+// /****************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (ESTADO MOVIMIENTO) */
+// /****************************************************************************************/
+
+// router.get("/estado/",async(req,res)=>
+//     {
+//         const estado = req.query.estado;
+    
+//         let SQL = 'select * from movimiento where estado like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${estado}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por estado',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR ESTADO',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR ESTADO',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+
+// /********************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (AUTORIZADO MOVIMIENTO) */
+// /********************************************************************************************/
+
+// router.get("/autorizacion/",async(req,res)=>
+//     {
+//         const autorizacion = req.query.autorizacion;
+    
+//         let SQL = 'select * from movimiento where autorizacion like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${autorizacion}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por autorizacion',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR AUTORIZACION',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR AUTORIZACION',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+// /*****************************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE DESTINATARIO MOVIMIENTO) */
+// /*****************************************************************************************************/
+
+// router.get("/nombredestinatario/",async(req,res)=>
+//     {
+//         const nombredestinatario = req.query.nombredestinatario;
+    
+//         let SQL = 'select * from movimiento where nombredestinatario like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${nombredestinatario}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por nombre destinatario',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR NOMBRE DESTINATARIO',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR NOMBRE DESTINATARIO',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
+
+// /*******************************************************************************************************/
+// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (TELEFONO DESTINATARIO MOVIMIENTO) */
+// /*******************************************************************************************************/
+
+// router.get("/telefonodestinatario/",async(req,res)=>
+//     {
+//         const telefonodestinatario = req.query.telefonodestinatario;
+    
+//         let SQL = 'select * from movimiento where telefonodestinatario like $1 limit 50';
+    
+//         let Resultado = '';
+    
+//         try {
+            
+//             Resultado = await pool.query(SQL,[`%${telefonodestinatario}%`]);
+    
+//             Salida = 
+//             {
+//                 result_estado:'ok',
+//                 result_message:'Movimiento recuperado por telefono destinatario',
+//                 result_rows:Resultado.rowCount,
+//                 result_proceso:'GET MOVIMIENTO POR TELEFONO DESTINATARIO',
+//                 result_data:Resultado.rows
+//             }        
+    
+//         } catch (error) 
+//         {
+//             Salida = 
+//             {
+//                 result_estado:'error',
+//                 result_message:error.message,
+//                 result_rows:0,
+//                 result_proceso:'GET MOVIMIENTO POR TELEFONO DESTINATARIO ',
+//                 result_data:''
+//             }        
+//         }
+//         res.json(Salida);
+//     })
 
 
 
