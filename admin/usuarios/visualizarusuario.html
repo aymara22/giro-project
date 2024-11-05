@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>visualizarusuario</title>    
+
+<head>
+    <title>visualizarusuario</title>
     <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
     <link rel="stylesheet" href="/style/formulario2.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  </head>
+</head>
 
-  <body>
+<body>
     <header>
         <div class="logo-container">
             <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
@@ -20,76 +22,115 @@
             <h1>PUNTO GIRO</h1>
             <h2>CONTROL DE STOCK</h2>
         </div>
+        <div>
+            <button type="button" class="logOut">cerrar sesion</button>
+        </div>
     </header>
     <nav>
-      <ul>
-          <li>
-              <a href="/admin/index.html">
-                  <i class="fas fa-home"></i>>
-              </a>
-          </li>
-          <li><a href="usuarioadmin.html">Usuarios ></a></li>
-          <li><a href="">Ver Usuario</a></li>
-      </ul>
-  </nav>
+        <ul>
+            <li>
+                <a href="/admin/index.html" class="volver">
+                    <i class="fas fa-home"></i>>
+                </a>
+            </li>
+            <li><a href="usuarioadmin.html" class="volver">Usuarios ></a></li>
+            <li><a href="">Ver Usuario</a></li>
+        </ul>
+    </nav>
     <div class="form-container">
         <h2>Visualizar Usuario</h2>
-    
-        <form id="visualizarUsuarioForm">
+
+        <form class="visualizarUsuarioForm">
             <!-- Campo de Nombre Completo -->
-            <div class="form-group">
-                <label for="nombreCompleto">Nombre Completo</label>
-                <input type="text" id="nombreCompleto" value="Juan Pérez" readonly>
-            </div>
-    
-            <!-- Campo de Nombre de Usuario -->
-            <div class="form-group">
-                <label for="nombreUsuario">Nombre de Usuario</label>
-                <input type="text" id="nombreUsuario" value="jperez" readonly>
-            </div>
-    
-            <!-- Campo de DNI -->
-            <div class="form-group">
-                <label for="dni">DNI</label>
-                <input type="text" id="dni" value="12345678" readonly>
-            </div>
-    
-            <!-- Campo de Email -->
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" value="jperez@example.com" readonly>
-            </div>
-    
-            <!-- Campo de Tipo de Rol -->
-            <div class="form-group">
-                <label for="rol">Rol</label>
-                <select id="rol" disabled>
-                    <option selected>Usuario</option>
-                    <option>Administrador</option>
-                </select>
-            </div>
-    
-            <!-- Campo de Habilitado -->
-            <div class="form-group">
-                <label for="habilitado">Habilitado</label>
-                <select id="habilitado" disabled>
-                    <option selected>Sí</option>
-                    <option>No</option>
-                </select>
-            </div>
-    
+            <div class="form-group"></div>
             <!-- Botón de Volver -->
-            <div class="boton-container">
-                <button type="button" class="btn-volver">Volver</button>
-            </div>
         </form>
 
-
+        <br><br><br><br><br>
         <footer>
             <div class="footer-content">
                 <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
-               <!-- <p>Diseñado por [Tu Nombre]</p> -->
+                <!-- <p>Diseñado por [Tu Nombre]</p> -->
             </div>
         </footer>
-  </body>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        viewUser();
+        removeUserId();
+        cerrarSesion();
+        validarSesion();
+    });
+
+    function cerrarSesion() {
+        let cerrarSesion = document.querySelector(".logOut")
+        cerrarSesion.addEventListener("click", function () {
+            localStorage.clear()
+            window.location.href = "../auth/login.html"
+        })
+    }
+
+    function validarSesion() {
+        let sesion = localStorage.getItem("isLoggedIn")
+        let userSession = localStorage.getItem("userSession")
+        if (!sesion || !userSession) {
+            window.location.href = "../auth/login.html"
+        }
+    }
+
+    function removeUserId() {
+        const btnVolver = document.querySelector(".volver");
+
+        if (btnVolver) {
+            btnVolver.addEventListener("click", () => {
+                localStorage.removeItem("usuarioId");
+            });
+        }
+    }
+
+
+    async function viewUser() {
+
+        let userForm = document.querySelector(".visualizarUsuarioForm")
+        try {
+            const id = localStorage.getItem("usuarioId")
+            console.log(id)
+            const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            const divContent = document.querySelector(".form-group")
+            const user = result.result_data[0]
+
+            divContent.innerHTML = `
+                    <label for="nombreCompleto">Nombre Completo</label>
+                    <input type="text" id="nombreCompleto" value="${user.nombre_completo}" readonly>
+
+                    <label for="nombreCompleto">DNI</label>
+                    <input type="text" id="nombreCompleto" value="${user.dni}" readonly>
+
+                    <label for="nombreCompleto">Nombre usuario</label>
+                    <input type="text" id="nombreCompleto" value="${user.nombre_usuario}" readonly>
+
+                    <label for="nombreCompleto">Nombre usuario</label>
+                    <input type="text" id="nombreCompleto" value="${user.tipo_usuario}" readonly>
+
+                    <label for="nombreCompleto">Nombre usuario</label>
+                    <input type="text" id="nombreCompleto" value="${user.email}" readonly>
+
+                    <label for="nombreCompleto">Nombre usuario</label>
+                    <input type="text" id="nombreCompleto" value="${user.activo == true ? 'SI' : 'NO'}" readonly>
+
+                `;
+
+        } catch (error) {
+            console.log(`Se produjo un error: ${error.message}`);
+        }
+    }
+</script>
+
 </html>

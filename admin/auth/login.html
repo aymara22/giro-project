@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../style/index.css">
+    <title>Index Giro</title>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="../../img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>PUNTO GIRO</h1>
+            <h2>CONTROL DE STOCK</h2>
+        </div>
+    </header>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="main-content">
+        <div class="login-container">
+            <!-- <form action="http://localhost:3000/api-giro/login/" method="post"> -->
+                <h2>Iniciar Sesión</h2>
+                <div class="form-group">
+                    <label for="username">Nombre de Usuario</label>
+                    <input type="text" class="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" class="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <p><a href="olvidarcontraseña.html" >¿Olvidaste tu contraseña?</a></p>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btnIngresa">Ingresar</button>
+                </div>
+            <!-- </form> -->
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+           <!-- <p>Diseñado por [Tu Nombre]</p> -->
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async ()=>{
+            const btnLogin= document.querySelector(".btnIngresa")
+            btnLogin.addEventListener("click", ()=>{
+                login();
+            })
+        })
+        
+        async function login() {
+            try {
+                const nombreUsuario = document.querySelector(".username").value
+                const password = document.querySelector(".password").value
+
+                const usuarioData={
+                    nombre_usuario: nombreUsuario,
+                    password: password
+                }
+
+                const response = await fetch('http://localhost:3000/api-giro/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(usuarioData)
+                });
+
+                const result = await response.json();
+                console.log(result)
+                
+                if (result.success) {
+    
+                    Swal.fire(
+                            'Sesion iniciada!',
+                            result.result_message,
+                            'success'
+                    ).then(() => {
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('userSession', nombreUsuario);
+                        window.location.href= "../index.html";
+                    });
+
+                } else {
+                    Swal.fire(
+                        'Error',
+                        result.result_message || 'Error de inicio de sesion',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.log(`Se produjo un error: ${error.message}`);
+            }
+        }
+    </script>
+
+
+</body>
+</html>

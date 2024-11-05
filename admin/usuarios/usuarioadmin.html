@@ -19,6 +19,9 @@
             <h1>PUNTO GIRO</h1>
             <h2>CONTROL DE STOCK</h2>
         </div>
+        <div>
+            <button type="button" class="logOut">cerrar sesion</button>
+        </div>
     </header>
     <nav>
       <ul>
@@ -33,49 +36,30 @@
     <br>
     <br>
     <br>
-    <table>
-      <tr>
-          <th colspan="5">Usuarios</th> <!-- Título principal que abarca las 5 columnas -->
-      </tr>
-      <tr>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>Rol</th>
-          <th>Habilitado</th>
-          <th>Acciones</th>
-      </tr>
-      <tr>
-          <td>Juan</td>
-          <td>Pérez</td>
-          <td>Administrador</td>
-          <td>Sí</td>
-          <td class="actions">
-              <a href="eliminarUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"></a>
-              <a href="editarusuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar"></a>
-              <a href="visualizarusuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/visible--v1.png" alt="Ver Más Detalles"></a>
-          </td>
-      </tr>
-      <tr>
-          <td>María</td>
-          <td>Gómez</td>
-          <td>Usuario</td>
-          <td>No</td>
-          <td class="actions">
-              <a href="eliminarUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"></a>
-              <a href="editarUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar"></a>
-              <a href="verUsuario.html"><img src="https://img.icons8.com/material-outlined/24/000000/visible--v1.png" alt="Ver Más Detalles"></a>
-          </td>
-      </tr>
+<table>
+    <thead>
+        <tr>
+            <th colspan="5">Usuarios</th> <!-- Título principal que abarca las 5 columnas -->
+        </tr>
+        <tr>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Habilitado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody class="userTable">
+    </tbody>
   </table>
   <br>
   <br>
   <br>
 
-  <div class="enlace-container">
+    <div class="enlace-container">
     <a href="registrarusuario.html" class="registro-enlace">Registrar Usuario</a>
-</div>
-  
-
+    </div>
+    <br><br><br><br><br>
     <footer>
         <div class="footer-content">
             <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
@@ -83,4 +67,113 @@
         </div>
     </footer>
   </body>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        viewUsers();
+        cerrarSesion(); 
+        validarSesion();
+      });
+
+      function cerrarSesion(){
+        let cerrarSesion= document.querySelector(".logOut")
+        cerrarSesion.addEventListener("click",function(){
+            localStorage.clear()
+            window.location.href = "../auth/login.html"
+        })
+      }
+  
+      function validarSesion(){
+        let sesion= localStorage.getItem("isLoggedIn")
+        let userSession= localStorage.getItem("userSession")
+        if(!sesion || !userSession){
+          window.location.href = "../auth/login.html"
+        }
+      }
+
+    async function viewUsers(){
+        
+        let userTable = document.querySelector(".userTable")
+        try {
+            
+            const response = await fetch('http://localhost:3000/api-giro/usuario/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            result.result_data.forEach((user)=>{
+                console.log(user)
+                const tr= document.createElement("tr")
+                tr.innerHTML = `
+                <tr>
+                    <td>${user.nombre_completo}</td>
+                    <td>${user.nombre_usuario}</td>
+                    <td>${user.tipo_usuario}</td>
+                    <td>${user.activo}</td>
+                    <td>
+                        <a href="#" onclick="eliminarUsuario(${user.id})"><img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"></a>
+                        <a href="editarusuario.html" onclick="guardarIdUsuario(${user.id})"><img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar"></a>
+                        <a href="visualizarusuario.html" onclick="guardarIdUsuario(${user.id})"><img src="https://img.icons8.com/material-outlined/24/000000/visible--v1.png" alt="Ver Más Detalles"></a>
+                    </td>
+                </tr>
+                `;
+                userTable.appendChild(tr)
+            })
+        
+        } catch (error) {
+            console.log(`Se produjo un error: ${error.message}`);
+        }
+    }
+
+    function guardarIdUsuario(id){
+        localStorage.setItem("usuarioId", id)
+    }
+
+    async function eliminarUsuario(id) {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¡Esta acción no se puede deshacer!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+    
+        // Si el usuario confirma, proceder a eliminar
+        if (result.isConfirmed) {
+            const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const responseData = await response.json();
+    
+            if (responseData.success) {
+                Swal.fire(
+                    '¡Eliminado!',
+                    responseData.result_message,
+                    'success'
+                ).then(() => {
+                    location.reload(); // Recarga la página después de cerrar la alerta
+                });
+            } else {
+                Swal.fire(
+                    'Error',
+                    responseData.result_message || 'No se pudo eliminar el usuario.',
+                    'error'
+                );
+            }
+        }
+    }
+    
+    
+  </script>
 </html>

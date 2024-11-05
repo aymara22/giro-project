@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>interdepoadmin</title>
+    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="/style/tablas.css">
+    <link rel="stylesheet" href="/style/formularios.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+
+.button-group {
+    display: flex;
+    gap: 510px; /* Espacio entre los botones */
+}
+
+input[type="submit"],
+button.cancel {
+    background-color: green;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 150px; /* Tamaño uniforme */
+    text-align: center;
+}
+
+input[type="submit"]:hover {
+    background-color: darkgreen;
+}
+
+button.cancel {
+    background-color: red;
+}
+
+button.cancel:hover {
+    background-color: darkred;
+}
+
+
+    </style>
+  </head>
+
+  <body>
+    <header>
+        <div class="logo-container">
+            <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>PUNTO GIRO</h1>
+            <h2>CONTROL DE STOCK</h2>
+        </div>
+        <div>
+            <button type="button" class="logOut">cerrar sesion</button>
+        </div>
+    </header>
+    <nav>
+      <ul>
+          <li>
+              <a href="/admin/index.html">
+                  <i class="fas fa-home"></i>>
+              </a>
+          </li>
+          <li><a href="/admin/interdeposito/interdepoadmin.html">interdeposito ></a></li>
+          <li><a href="">formulario</a></li>
+      </ul>
+  </nav>
+  <br>
+  <h2>Formulario de Interdeposito</h2>
+  <form action="" method="post">
+      <label for="id_usuario">ID Usuario:</label>
+      <input type="text" id="id_usuario" name="id_usuario" required><br><br>
+
+      <label for="id_insumos">ID Insumos:</label>
+      <input type="text" id="id_insumos" name="id_insumos" required><br><br>
+
+      <label for="telefono">Teléfono:</label>
+      <input type="tel" id="telefono" name="telefono" required><br><br>
+
+      <label for="punto_inicio">Punto de Inicio:</label>
+      <select id="punto_inicio" name="punto_inicio" required>
+          <option value="destino1">Chacarita</option>
+          <option value="destino2">Oficina</option>
+          <option value="destino3">Predio Ferial </option>
+          <option value="destino3">Valle Chico</option>
+      </select><br><br>
+
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+
+  <footer>
+    <div class="footer-content">
+        <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+       <!-- <p>Diseñado por [Tu Nombre]</p> -->
+    </div>
+</footer>
+  </body>
+</html>
