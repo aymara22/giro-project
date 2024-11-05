@@ -352,11 +352,13 @@ ServidorWeb.get("/usuario/:ID", async (req, res) => {
 
 
 
+//************************ END POINT DE INSUMOS *************************/
 
 /********************************************************************************/
 /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (ID INSUMO) */
 /********************************************************************************/
 
+//http://localhost:3000/insumo/1
 ServidorWeb.get("/insumo/:ID",async(req,res)=>
     {
         const ID = req.params.ID;
@@ -397,88 +399,101 @@ ServidorWeb.get("/insumo/:ID",async(req,res)=>
 /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CATEGORIA INSUMO) */
 /***************************************************************************************/
 
-ServidorWeb.get("/categoria/",async(req,res)=>
-    {
-        const CATEGORIA = req.query.categoria;
+//http://localhost:3000/categoria?categoria=colilleros
+ServidorWeb.get("/categoria/", async (req, res) => {
+    const CATEGORIA = req.query.categoria;
+
+    // Verificar si el parámetro 'categoria' fue proporcionado
+    if (!CATEGORIA) {
+        return res.json({
+            result_estado: 'error',
+            result_message: 'El parámetro "categoria" es obligatorio.',
+            result_rows: 0,
+            result_proceso: 'GET INSUMO POR CATEGORIA',
+            result_data: null
+        });
+    }
+
+    const SQL = 'SELECT * FROM insumo WHERE categoria LIKE $1 LIMIT 50';
+
+    let Salida = {};
+
+    try {
+        const Resultado = await ConexionDB.query(SQL, [`%${CATEGORIA}%`]);
+
+        Salida = {
+            result_estado: 'ok',
+            result_message: 'Insumo recuperado por categoria',
+            result_rows: Resultado.rowCount,
+            result_proceso: 'GET INSUMO POR CATEGORIA',
+            result_data: Resultado.rows
+        };
+
+    } catch (error) {
+        Salida = {
+            result_estado: 'error',
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET INSUMO POR CATEGORIA',
+            result_data: null
+        };
+    }
     
-        let SQL = 'select * from insumo where categoria like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${CATEGORIA}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Insumo recuperado por categoria',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET INSUMO POR CATEGORIA',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET INSUMO POR CATEGORIA',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
+    res.json(Salida);
+});
+
 
 /************************************************************************************/
 /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE INSUMO) */
 /************************************************************************************/
 
-ServidorWeb.get("/nombreinsumo/",async(req,res)=>
-{
-    const NOMBRE = req.query.nombre;
+//http://localhost:3000/nombreinsumo?nombreinsumo=Rosa
+ServidorWeb.get("/nombreinsumo", async (req, res) => {
+    const nombreInsumo = req.query.nombreinsumo;
 
-    let SQL = 'select * from insumo where nombreinsumo like $1 limit 50';
+    // Verificar si el parámetro 'nombreinsumo' fue proporcionado
+    if (!nombreInsumo) {
+        return res.json({
+            result_estado: 'error',
+            result_message: 'El parámetro "nombreinsumo" es obligatorio.',
+            result_rows: 0,
+            result_proceso: 'GET INSUMO POR NOMBRE',
+            result_data: null
+        });
+    }
 
-    let Resultado = '';
+    const SQL = 'SELECT * FROM insumo WHERE nombre LIKE $1 LIMIT 50';
+    let Salida = {};
 
     try {
-        
-        Resultado = await ConexionDB.query(SQL,[`%${NOMBRE}%`]);
+        const Resultado = await ConexionDB.query(SQL, [`%${nombreInsumo}%`]);
 
-        Salida = 
-        {
-            result_estado:'ok',
-            result_message:'Insumo recuperado por Nombre',
-            result_rows:Resultado.rowCount,
-            result_proceso:'GET INSUMO POR NOMBRE',
-            result_data:Resultado.rows
-        }        
+        Salida = {
+            result_estado: 'ok',
+            result_message: 'Insumo recuperado por nombre',
+            result_rows: Resultado.rowCount,
+            result_proceso: 'GET INSUMO POR NOMBRE',
+            result_data: Resultado.rows
+        };
 
-    } catch (error) 
-    {
-        Salida = 
-        {
-            result_estado:'error',
-            result_message:error.message,
-            result_rows:0,
-            result_proceso:'GET INSUMO POR NOMBRE ',
-            result_data:''
-        }        
+    } catch (error) {
+        Salida = {
+            result_estado: 'error',
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET INSUMO POR NOMBRE',
+            result_data: null
+        };
     }
+    
     res.json(Salida);
-})
-
-
-
+});
 
 /*****************************************************************************************/
 /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (DESCRIPCION INSUMO) */
 /*****************************************************************************************/
 
-ServidorWeb.get("/descripcion/",async(req,res)=>
+/*ServidorWeb.get("/descripcion/",async(req,res)=>
     {
         const descripcion = req.query.descripcion;
     
@@ -512,46 +527,43 @@ ServidorWeb.get("/descripcion/",async(req,res)=>
         }
         res.json(Salida);
     })
-
+*/
 
 /**************************************************************************************/
 /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CANTIDAD INSUMO) */
 /**************************************************************************************/
 
-ServidorWeb.get("/cantidad/",async(req,res)=>
-    {
-        const cantidad = req.query.cantidad;
-    
-        let SQL = 'select * from insumo where cantidad like $1 limit 50';
-    
-        let Resultado = '';
-    
-        try {
-            
-            Resultado = await ConexionDB.query(SQL,[`%${cantidad}%`]);
-    
-            Salida = 
-            {
-                result_estado:'ok',
-                result_message:'Insumo recuperado por cantidad',
-                result_rows:Resultado.rowCount,
-                result_proceso:'GET INSUMO POR CANTIDAD',
-                result_data:Resultado.rows
-            }        
-    
-        } catch (error) 
-        {
-            Salida = 
-            {
-                result_estado:'error',
-                result_message:error.message,
-                result_rows:0,
-                result_proceso:'GET INSUMO POR CANTIDAD',
-                result_data:''
-            }        
-        }
-        res.json(Salida);
-    })
+//http://localhost:3000/cantidad?cantidad=9
+ServidorWeb.get("/cantidad/", async (req, res) => {
+    const cantidad = req.query.cantidad;
+
+    const SQL = 'SELECT * FROM insumo WHERE cantidad = $1 LIMIT 50'; // Cambiado a '='
+
+    let Resultado = '';
+
+    try {
+        Resultado = await ConexionDB.query(SQL, [cantidad]); // Sin necesidad de '%' aquí
+
+        Salida = {
+            result_estado: 'ok',
+            result_message: 'Insumo recuperado por cantidad',
+            result_rows: Resultado.rowCount,
+            result_proceso: 'GET INSUMO POR CANTIDAD',
+            result_data: Resultado.rows
+        };
+
+    } catch (error) {
+        Salida = {
+            result_estado: 'error',
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET INSUMO POR CANTIDAD',
+            result_data: ''
+        };
+    }
+    res.json(Salida);
+});
+
 
 
     //************************ END POINT DE MOVIMIENTO *************************/

@@ -120,16 +120,28 @@ button:hover {
 }
   
 
-/*PIE DE PAGINA*/
+/* Configuración para que el contenido ocupe todo el espacio disponible */
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
 
+/* Contenido principal */
+main {
+    flex: 1;
+    padding: 20px; /* Ajuste opcional para dar espacio al contenido */
+}
+
+/* Estilos del pie de página pegado al final */
 footer {
     background-color: #ffffff;
     color: rgb(24, 24, 24);
     text-align: center;
     padding: 20px 0;
-    position: relative; /* Cambiado de fixed a relative */
     width: 100%;
-    bottom: 0;
+    margin-top: auto; /* Asegura que el pie de página se mantenga al final */
 }
 
 .footer-content {
@@ -142,12 +154,6 @@ footer p {
     font-size: 0.9em;
 }
 
-/* Espaciado adicional para asegurar que el pie de página esté al final de la página */
-body::after {
-    content: "";
-    display: block;
-    height: 50px; /* Ajusta según la altura del footer */
-}
 
 
 /*RUTA DE NAVEGACION */

@@ -8,7 +8,7 @@
 }
 
 /* Encabezado de la tabla (nombre de la tabla) */
-#tablaProductos th[colspan="3"] {
+#tablaProductos th[colspan="4"] {
     background-color: #f2f2f2;
     font-size: 20px;
     padding: 15px;
