@@ -1,14 +1,22 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db")
-const {validarUsuario} = require("../utils/utils")
+const {
+    validarUsuario
+} = require("../utils/utils")
 const bcrypt = require('bcrypt');
+const {
+    response
+} = require("express");
 
 
 router.post("/login", async (req, res) => {
-    const {nombre_usuario, password} = req.body
+    const {
+        nombre_usuario,
+        password
+    } = req.body
     try {
-        if(!nombre_usuario || !password){
+        if (!nombre_usuario || !password) {
             const error = new Error("Campos vacios");
             error.statusCode = 401;
             throw error;
@@ -37,15 +45,14 @@ router.post("/login", async (req, res) => {
             throw error;
         }
     } catch (error) {
-        res.status(error.statusCode || 500).json(
-            {   success: false,
-                status: error.statusCode || 500,
-                result_message: error.message,
-                result_rows: 0,
-                result_proceso: 'LOGIN',
-                result_data: []
-            }
-        )
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'LOGIN',
+            result_data: []
+        })
     }
 
 });
@@ -58,7 +65,7 @@ router.get("/usuario/:id", async (req, res, next) => {
     let query = 'select * from usuario where id = $1';
     try {
         let usuario = await pool.query(query, [id]);
-        
+
         if (usuario.rows.length < 1) {
             const error = new Error("No se ha encontrado un usuario con el id proporcionado");
             error.statusCode = 404;
@@ -74,17 +81,16 @@ router.get("/usuario/:id", async (req, res, next) => {
             result_data: usuario.rows,
         })
     } catch (error) {
-        
-        res.status(error.statusCode || 500).json(
-            {   success: false,
-                status: error.statusCode || 500,
-                result_message: error.message,
-                result_rows: 0,
-                result_proceso: 'GET USUARIO POR ID',
-                result_data: []
-            }
-        )
-        
+
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET USUARIO POR ID',
+            result_data: []
+        })
+
     }
 });
 
@@ -99,7 +105,7 @@ router.get("/usuario/", async (req, res) => {
             const error = new Error("No se encontraron usuarios por mostrar");
             error.statusCode = 404;
             throw error;
-        }else{
+        } else {
 
             res.json({
                 success: true,
@@ -123,54 +129,63 @@ router.get("/usuario/", async (req, res) => {
     }
 });
 
-router.post("/usuario/",async(req,res)=>
-{
-    const {nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo} = req.body;
+router.post("/usuario/", async (req, res) => {
+    const {
+        nombre_completo,
+        dni,
+        nombre_usuario,
+        email,
+        tipo_usuario,
+        password,
+        activo
+    } = req.body;
     const validacion = validarUsuario(req.body)
 
     try {
-        if(validacion.success === false){
+        if (validacion.success === false) {
             const error = new Error(validacion.error);
             error.statusCode = 400;
             throw error;
         }
-    
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         let query = 'INSERT INTO usuario (nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo) values ($1,$2,$3,$4,$5,$6,$7) returning *';
-        user = await pool.query(query ,[nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,hashedPassword , activo]);
+        user = await pool.query(query, [nombre_completo, dni, nombre_usuario, email, tipo_usuario, hashedPassword, activo]);
 
         res.json({
-            success:true,
+            success: true,
             status: 200,
-            result_message:'Usuario guardado de forma exitosa!',
-            result_rows:user.rowCount,
-            result_proceso:'POST USUARIO',
-            result_data:user.rows[0]
-        })          
+            result_message: 'Usuario guardado de forma exitosa!',
+            result_rows: user.rowCount,
+            result_proceso: 'POST USUARIO',
+            result_data: user.rows[0]
+        })
 
     } catch (error) {
         res.status(error.statusCode || 500).json({
-            success:false,
+            success: false,
             status: error.statusCode || 500,
             result_message: error.message,
-            result_rows:0,
-            result_proceso:'POST',
-            result_data:''
-        })   
+            result_rows: 0,
+            result_proceso: 'POST',
+            result_data: ''
+        })
     }
 })
 
 router.put('/usuario/:id', async (req, res) => {
-    const { id } = req.params;
-    const campos = req.body; 
+    const {
+        id
+    } = req.params;
+    const campos = req.body;
 
     let query = 'UPDATE usuario SET ';
     const valores = [];
-    let contador = 1; 
+    let contador = 1;
 
     for (const campo in campos) {
-        if (campos[campo] !== undefined) { 
+        if (campos[campo] !== undefined) {
             query += `${campo} = $${contador}, `;
             valores.push(campos[campo]);
             contador++;
@@ -211,7 +226,9 @@ router.put('/usuario/:id', async (req, res) => {
 
 
 router.delete('/usuario/:id', async (req, res) => {
-    const { id } = req.params;
+    const {
+        id
+    } = req.params;
 
     try {
         // Ejecutamos la consulta DELETE en PostgreSQL
@@ -245,20 +262,87 @@ router.delete('/usuario/:id', async (req, res) => {
 });
 
 
+// INTERDEPOSITO 
+
+router.get('/interdeposito', async (req, res) => {
+    try {
+        let result = await pool.query(`
+            SELECT i.id, i.telefono, i.insumos, i.origen, i.destino, i.fecha_creacion, u.nombre_usuario
+            FROM interdeposito i 
+            INNER JOIN usuario u ON u.id = i.usuario_id
+            ORDER BY id DESC
+        `);
+        
+        if (result.rowCount == 0) {
+            const error = new Error(`No se encontraron registros`);
+            error.statusCode = 404;
+            throw error;
+        }
+
+        // Cambia forEach por map
+        const response = await Promise.all(result.rows.map(async registro => {
+            try {
+                // Parsear los insumos y mapear cada insumo_id
+                const insumos = await Promise.all(JSON.parse(registro.insumos).map(async (insumo_id) => {
+                    const insumoResult = await pool.query(`
+                        SELECT nombre_insumo FROM insumo WHERE id = $1
+                    `, [parseInt(insumo_id)]);
+
+                    if (insumoResult.rowCount == 0) {
+                        const error = new Error(`No se encontró un insumo con el id ${insumo_id}`);
+                        error.statusCode = 404;
+                        throw error;
+                    }
+                    
+                    return insumoResult.rows[0].nombre_insumo;
+                }));
+
+                registro.insumos = insumos;
+                return registro;
+            } catch (error) {
+                throw error; 
+            }
+        }));
+
+        // Envía la respuesta final después de que todas las promesas se resuelvan
+        res.json({
+            success: true,
+            result_message: 'Historial obtenido!',
+            result_rows: result.rowCount,
+            result_proceso: 'GET HISTORIAL INTERDEPOSITO',
+            result_data: response,
+        });
+
+    } catch (error) {
+        // Maneja el error aquí
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET HISTORIAL INTERDEPOSITO',
+            result_data: '',
+        });
+    }
+});
+
+
+
+
 
 
 // router.get("/insumo/:ID",async(req,res)=>
 //     {
 //         const ID = req.params.ID;
-    
+
 //         let SQL = 'select * from insumo where idinsumo = $1';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[ID]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -267,7 +351,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET INSUMO POR ID',
 //                 result_data:Resultado.rows[0] 
 //             }          
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -281,7 +365,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //         }
 //         res.json(Salida);
 //     })
-    
+
 
 // /***************************************************************************************/
 // /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CATEGORIA INSUMO) */
@@ -290,15 +374,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/categoria/",async(req,res)=>
 //     {
 //         const CATEGORIA = req.query.categoria;
-    
+
 //         let SQL = 'select * from insumo where categoria like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${CATEGORIA}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -307,7 +391,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET INSUMO POR CATEGORIA',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -335,7 +419,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //     let Resultado = '';
 
 //     try {
-        
+
 //         Resultado = await pool.query(SQL,[`%${NOMBRE}%`]);
 
 //         Salida = 
@@ -371,15 +455,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/descripcion/",async(req,res)=>
 //     {
 //         const descripcion = req.query.descripcion;
-    
+
 //         let SQL = 'select * from insumo where descripcion like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${descripcion}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -388,7 +472,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET INSUMO POR DESCRIPCION',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -411,15 +495,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/cantidad/",async(req,res)=>
 //     {
 //         const cantidad = req.query.cantidad;
-    
+
 //         let SQL = 'select * from insumo where cantidad like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${cantidad}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -428,7 +512,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET INSUMO POR CANTIDAD',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -453,15 +537,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/idmovimiento/:ID",async(req,res)=>
 //     {
 //         const ID = req.params.ID;
-    
+
 //         let SQL = 'select * from movimiento where idmovimiento = $1';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[ID]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -470,7 +554,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR ID',
 //                 result_data:Resultado.rows[0] 
 //             }          
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -493,15 +577,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/tipomovimiento/",async(req,res)=>
 //     {
 //         const tipomovimiento = req.query.tipomovimiento;
-    
+
 //         let SQL = 'select * from movimiento where tipomovimiento like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${tipomovimiento}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -510,7 +594,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR TIPO',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -532,15 +616,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/fechahora/",async(req,res)=>
 //     {
 //         const fechahora = req.query.fechahora;
-    
+
 //         let SQL = 'select * from movimiento where fechahora like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${fechahora}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -549,7 +633,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR FECHA Y HORA',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -572,15 +656,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/observacion /",async(req,res)=>
 //     {
 //         const observacion = req.query.observacion;
-    
+
 //         let SQL = 'select * from movimiento where observacion like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${observacion}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -589,7 +673,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR OBSERVACION',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -612,15 +696,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/empleado/",async(req,res)=>
 //     {
 //         const empleado = req.query.empleado;
-    
+
 //         let SQL = 'select * from movimiento where empleado like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${empleado}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -629,7 +713,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR EMPLEADO',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -652,15 +736,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/estado/",async(req,res)=>
 //     {
 //         const estado = req.query.estado;
-    
+
 //         let SQL = 'select * from movimiento where estado like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${estado}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -669,7 +753,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR ESTADO',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -692,15 +776,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/autorizacion/",async(req,res)=>
 //     {
 //         const autorizacion = req.query.autorizacion;
-    
+
 //         let SQL = 'select * from movimiento where autorizacion like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${autorizacion}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -709,7 +793,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR AUTORIZACION',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -731,15 +815,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/nombredestinatario/",async(req,res)=>
 //     {
 //         const nombredestinatario = req.query.nombredestinatario;
-    
+
 //         let SQL = 'select * from movimiento where nombredestinatario like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${nombredestinatario}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -748,7 +832,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR NOMBRE DESTINATARIO',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
@@ -770,15 +854,15 @@ router.delete('/usuario/:id', async (req, res) => {
 // router.get("/telefonodestinatario/",async(req,res)=>
 //     {
 //         const telefonodestinatario = req.query.telefonodestinatario;
-    
+
 //         let SQL = 'select * from movimiento where telefonodestinatario like $1 limit 50';
-    
+
 //         let Resultado = '';
-    
+
 //         try {
-            
+
 //             Resultado = await pool.query(SQL,[`%${telefonodestinatario}%`]);
-    
+
 //             Salida = 
 //             {
 //                 result_estado:'ok',
@@ -787,7 +871,7 @@ router.delete('/usuario/:id', async (req, res) => {
 //                 result_proceso:'GET MOVIMIENTO POR TELEFONO DESTINATARIO',
 //                 result_data:Resultado.rows
 //             }        
-    
+
 //         } catch (error) 
 //         {
 //             Salida = 
