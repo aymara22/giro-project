@@ -1,16 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>stockvallechico</title>
+
+<head>
+    <title>stockValle Chico</title>
     <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
-    <link rel="stylesheet" href="/style/puntostablas.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  </head>
-  <body>
+    <link rel="stylesheet" href="/style/indexadmin.css">
+    <link rel="stylesheet" href="/style/puntostablas.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #map {
+            width: 200px;
+            /* Mapa ocupa el 100% del ancho del contenedor */
+            height: 200px;
+            position: absolute;
+            bottom: 0px;
+            left: 50px;
+            /* Ajuste de altura para hacerlo más visible */
+            /* Ajuste de altura para hacerlo más visible */
+        }
+    </style>
+</head>
+
+<body>
     <header>
         <div class="logo-container">
             <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
@@ -20,83 +38,111 @@
             <h2>CONTROL DE STOCK</h2>
         </div>
         <div>
-          <button type="button" class="logOut">cerrar sesion</button>
-      </div>
+            <button type="button" class="logOut">cerrar sesion</button>
+        </div>
     </header>
     <nav>
-      <ul>
-          <li>
-              <a href="/admin/index.html">
-                  <i class="fas fa-home"></i>>
-              </a>
-          </li>
-          <li><a href="stockadmin.html">Stock ></a></li>
-          <li><a href="">Valle Chico</a></li>
-      </ul>
-  </nav>
-  <br>
+        <ul>
+            <li>
+                <a href="/admin/index.html">
+                    <i class="fas fa-home"></i>>
+                </a>
+            </li>
+            <li><a href="stockadmin.html">Stock ></a></li>
+            <li><a href="">Valle Chico</a></li>
+        </ul>
+    </nav>
+    <br>
 
-  <h2>Punto Giro VALLE CHICO</h2>
-  <br>
-  <br>
-  <table id="tablaProductos">
-    <tr>
-        <th colspan="4">CESTOS DE PLÁSTICOS</th>
-    </tr>
-    <tr>
-        <th>Producto</th>
-        <th>Descripcion</th>
-        <th>Cantidad</th>
-        <th>Acciones <span class="add-row-icon" onclick="agregarFila()">&#43;</span></th> <!-- Ícono de + -->
-    </tr>
-    <tr>
-        <td>Cestos 10</td>
-        <td></td>
-        <td>50</td>
-        <td class="actions">
-            <img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar" onclick="eliminarFila(this)">
-            <img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar">
-        </td>
-    </tr>
-</table>
-<br>
-<br>
+    <h2>Punto Giro Valle Chico</h2>
+    <br>
 
-<table id="tablaProductos">
-  <tr>
-      <th colspan="4">COLILLEROS</th> <!-- Cambiado a colspan="4" para abarcar las cuatro columnas -->
-  </tr>
-  <tr>
-      <th>Producto</th>
-      <th>Descripcion</th>
-      <th>Cantidad</th>    
-      <th>Acciones <span class="add-row-icon" onclick="agregarFila()">&#43;</span></th> <!-- Ícono de + para agregar fila -->
-  </tr>
-  <tr>
-      <td>Amarillos Grandes</td>
-      <td></td>
-      <td>15</td>
-      <td class="actions">
-          <img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar" onclick="eliminarFila(this)">
-          <img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar">
-      </td>
-  </tr>
-</table>
+    <!-- Aquí estará el mapa -->
 
-<br>
-<br>
 
-  <br>
-  <br>
-  <div class="enlace-container">
-    <a href="registrarusuario.html" class="registro-enlace">Crear Nueva Tabla de Insumos</a>
-  </div>
+    <table id="tablaProductos">
+        <tr>
+            <th colspan="4">CESTOS DE PLÁSTICOS</th>
+        </tr>
+        <tr>
+            <th>Producto</th>
+            <th>Descripcion</th>
+            <th>Cantidad</th>
+            <th>Acciones <span class="add-row-icon" onclick="agregarFila()">&#43;</span></th>
+        </tr>
+        <tr>
+            <td>Cestos 10</td>
+            <td></td>
+            <td>50</td>
+            <td class="actions">
+                <img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"
+                    onclick="eliminarFila(this)">
+                <img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar">
+            </td>
+        </tr>
+    </table>
+    <br><br>
 
-  <footer>
-    <div class="footer-content">
-        <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
-       <!-- <p>Diseñado por [Tu Nombre]</p> -->
+    <table id="tablaProductos">
+        <tr>
+            <th colspan="4">COLILLEROS</th>
+        </tr>
+        <tr>
+            <th>Producto</th>
+            <th>Descripcion</th>
+            <th>Cantidad</th>
+            <th>Acciones <span class="add-row-icon" onclick="agregarFila()">&#43;</span></th>
+        </tr>
+        <tr>
+            <td>Amarillos Grandes</td>
+            <td></td>
+            <td>15</td>
+            <td class="actions">
+                <img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"
+                    onclick="eliminarFila(this)">
+                <img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar">
+            </td>
+        </tr>
+    </table>
+
+    <br>
+    <br>
+
+    <div class="enlace-container">
+        <a href="registrarusuario.html" class="registro-enlace">Crear Nueva Tabla de Insumos</a>
     </div>
-</footer>
-  </body>
+    <br>
+    <br>
+
+    <div id="map"></div>
+    <br><br>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Coordenadas del punto de "Valle Chico"
+        
+        const lat = -28.49684812552563 // Ejemplo de latitud
+        const lon = -65.8161940182763 // Ejemplo de longitud
+
+        // Inicializar el mapa y centrarlo en Valle Chico
+        const map = L.map('map').setView([lat, lon], 14); // Nivel de zoom 14 para una vista detallada
+
+        // Añadir el "tile layer" (mapa base)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Añadir un marcador en las coordenadas de Valle Chico
+        L.marker([lat, lon]).addTo(map)
+            .bindPopup("Punto Giro Valle Chico")
+            .openPopup();
+    </script>
+
+</body>
+
 </html>

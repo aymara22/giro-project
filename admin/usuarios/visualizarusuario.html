@@ -107,22 +107,22 @@
             const user = result.result_data[0]
 
             divContent.innerHTML = `
-                    <label for="nombreCompleto">Nombre Completo</label>
+                    <label for="nombreCompleto">Nombre Completo:</label>
                     <input type="text" id="nombreCompleto" value="${user.nombre_completo}" readonly>
 
-                    <label for="nombreCompleto">DNI</label>
+                    <label for="nombreCompleto">DNI:</label>
                     <input type="text" id="nombreCompleto" value="${user.dni}" readonly>
 
-                    <label for="nombreCompleto">Nombre usuario</label>
-                    <input type="text" id="nombreCompleto" value="${user.nombre_usuario}" readonly>
+                    <label for="nombreCompleto">Punto de control:</label>
+                    <input type="text" id="nombreCompleto" value="${user.punto_de_control}" readonly>
 
-                    <label for="nombreCompleto">Nombre usuario</label>
+                    <label for="nombreCompleto">Rol:</label>
                     <input type="text" id="nombreCompleto" value="${user.tipo_usuario}" readonly>
 
-                    <label for="nombreCompleto">Nombre usuario</label>
+                    <label for="nombreCompleto">Email:</label>
                     <input type="text" id="nombreCompleto" value="${user.email}" readonly>
 
-                    <label for="nombreCompleto">Nombre usuario</label>
+                    <label for="nombreCompleto">Habilitado:</label>
                     <input type="text" id="nombreCompleto" value="${user.activo == true ? 'SI' : 'NO'}" readonly>
 
                 `;

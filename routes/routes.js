@@ -1,13 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db")
-const {
-    validarUsuario
-} = require("../utils/utils")
+const {validarUsuario} = require("../utils/utils")
 const bcrypt = require('bcrypt');
-const {
-    response
-} = require("express");
 
 
 router.post("/login", async (req, res) => {
@@ -59,10 +54,10 @@ router.post("/login", async (req, res) => {
 
 // REST USERS 
 
-router.get("/usuario/:id", async (req, res, next) => {
+router.get("/usuario/:id", async (req, res) => {
     const id = req.params.id;
 
-    let query = 'select * from usuario where id = $1';
+    let query = 'select u.*, pdc.nombre AS punto_de_control from usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id where u.id = $1 ';
     try {
         let usuario = await pool.query(query, [id]);
 
@@ -96,7 +91,7 @@ router.get("/usuario/:id", async (req, res, next) => {
 
 router.get("/usuario/", async (req, res) => {
 
-    let SQL = 'select id, nombre_completo, nombre_usuario, tipo_usuario, activo from usuario';
+    let SQL = 'SELECT u.id, u.nombre_completo, u.nombre_usuario, u.tipo_usuario, pdc.nombre AS punto_de_control FROM usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id ';
 
     try {
         users = await pool.query(SQL);
@@ -137,7 +132,8 @@ router.post("/usuario/", async (req, res) => {
         email,
         tipo_usuario,
         password,
-        activo
+        activo,
+        punto_de_control_id
     } = req.body;
     const validacion = validarUsuario(req.body)
 
@@ -150,9 +146,9 @@ router.post("/usuario/", async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        let query = 'INSERT INTO usuario (nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo) values ($1,$2,$3,$4,$5,$6,$7) returning *';
-        user = await pool.query(query, [nombre_completo, dni, nombre_usuario, email, tipo_usuario, hashedPassword, activo]);
-
+        let query = 'INSERT INTO usuario (nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo, punto_de_control_id) values ($1,$2,$3,$4,$5,$6,$7,$8) returning *';
+        user = await pool.query(query, [nombre_completo, dni, nombre_usuario, email, tipo_usuario, hashedPassword, activo, punto_de_control_id]);
+        
         res.json({
             success: true,
             status: 200,
@@ -234,7 +230,6 @@ router.delete('/usuario/:id', async (req, res) => {
         // Ejecutamos la consulta DELETE en PostgreSQL
         const result = await pool.query('DELETE FROM usuario WHERE id = $1 RETURNING *', [id]);
 
-        // Si no se encontró el usuario para eliminar, enviamos un error
         if (result.rowCount === 0) {
             const error = new Error('No se encontró el usuario para eliminar');
             error.statusCode = 404;
@@ -264,44 +259,82 @@ router.delete('/usuario/:id', async (req, res) => {
 
 // INTERDEPOSITO 
 
-router.get('/interdeposito', async (req, res) => {
+router.get('/interdeposito/:id', async (req, res) => {
+    const id = req.params.id
     try {
-        let result = await pool.query(`
-            SELECT i.id, i.telefono, i.insumos, i.origen, i.destino, i.fecha_creacion, u.nombre_usuario
-            FROM interdeposito i 
-            INNER JOIN usuario u ON u.id = i.usuario_id
-            ORDER BY id DESC
-        `);
-        
+        let result = await pool.query(` SELECT * from interdeposito where id = $1`, [id]);
+
         if (result.rowCount == 0) {
-            const error = new Error(`No se encontraron registros`);
+            const error = new Error('Interdeposito inexistente');
             error.statusCode = 404;
             throw error;
         }
 
+
+        // Envía la respuesta final después de que todas las promesas se resuelvan
+        res.json({
+            success: true,
+            result_message: 'Interdeposito obtenido!',
+            result_rows: result.rowCount,
+            result_proceso: 'GET ONE INTERDEPOSITO',
+            result_data: result.rows[0],
+        });
+
+    } catch (error) {
+        // Maneja el error aquí
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET ONE INTERDEPOSITO',
+            result_data: '',
+        });
+    }
+});
+
+
+router.get('/interdeposito/', async (req, res) => {
+    try {
+        let result = await pool.query(`
+                SELECT 
+                i.id, 
+                i.email, 
+                i.insumos, 
+                p_origen.nombre AS origen, 
+                p_destino.nombre AS destino, 
+                i.fecha_creacion,
+                i.estado,
+                u.nombre_usuario
+            FROM 
+                interdeposito i
+            INNER JOIN 
+                usuario u ON u.id = i.usuario_id
+            INNER JOIN 
+                punto_de_control p_origen ON i.origen = p_origen.id
+            INNER JOIN 
+                punto_de_control p_destino ON i.destino = p_destino.id
+            ORDER BY 
+                i.id DESC;
+        `);
+
+        if (result.rowCount == 0) {
+            return res.json({
+                success: true,
+                result_message: 'Historial vacio!',
+                result_rows: 0,
+                result_proceso: 'GET HISTORIAL INTERDEPOSITO',
+                result_data: [],
+            });
+        }
+
         // Cambia forEach por map
-        const response = await Promise.all(result.rows.map(async registro => {
-            try {
-                // Parsear los insumos y mapear cada insumo_id
-                const insumos = await Promise.all(JSON.parse(registro.insumos).map(async (insumo_id) => {
-                    const insumoResult = await pool.query(`
-                        SELECT nombre_insumo FROM insumo WHERE id = $1
-                    `, [parseInt(insumo_id)]);
-
-                    if (insumoResult.rowCount == 0) {
-                        const error = new Error(`No se encontró un insumo con el id ${insumo_id}`);
-                        error.statusCode = 404;
-                        throw error;
-                    }
-                    
-                    return insumoResult.rows[0].nombre_insumo;
-                }));
-
-                registro.insumos = insumos;
-                return registro;
-            } catch (error) {
-                throw error; 
-            }
+        const response = await Promise.all(result.rows.map( async registro => {
+            const insumos = await Promise.all(JSON.parse(registro.insumos).map(async (insumo) => {
+                return insumo.nombre_insumo;
+            }));
+            registro.insumos = insumos;
+            return registro;
         }));
 
         // Envía la respuesta final después de que todas las promesas se resuelvan
@@ -326,85 +359,161 @@ router.get('/interdeposito', async (req, res) => {
     }
 });
 
+router.post("/interdeposito/", async (req, res) => {
+    const {
+        origen,
+        destino,
+        email,
+        usuario_id,
+        insumos
+    } = req.body;
+
+    try {
+
+        if (!origen || !destino || !email || !usuario_id || !insumos || insumos.length === 0 ){
+            const error = new Error("Campos vacios!");
+            error.statusCode = 400;
+            throw error;
+        }
+
+        let query = `INSERT INTO interdeposito (usuario_id, insumos, origen, destino, email)
+            VALUES ($1, $2, $3, $4, $5) returning *;`;
+        interdeposito = await pool.query(query, [usuario_id, JSON.stringify(insumos), origen, destino, email]);
+
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'Interdeposito guardado de forma exitosa!',
+            result_rows: interdeposito.rowCount,
+            result_proceso: 'POST INTERDEPOSITO',
+            result_data: interdeposito.rows[0]
+        })
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'POST INTERDEPOSITO',
+            result_data: ''
+        })
+    }
+})
 
 
+router.get("/insumo/", async (req, res) => {
+
+    let query = 'select * from insumo where apto=true';
+
+    let result = '';
+
+    try {
+
+        result = await pool.query(query);
+
+        if (result.rows.length == 0) {
+            const error = new Error("No se encontraron insumos por mostrar");
+            error.statusCode = 404;
+            throw error;
+        } else {
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'LISTA DE INSUMOS OBTENIDA',
+                result_rows: result.rowCount,
+                result_proceso: 'GET ALL INSUMOS',
+                result_data: result.rows
+            })
+        }
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET ALL INSUMOS',
+            result_data: []
+        })
+    }
+})
+
+router.put('/interdeposito/:id', async (req, res) => {
+    const {
+        id
+    } = req.params;
+
+    const {estado, insumos} = req.body;
+
+    try {
+
+        if(!estado || estado ==! "rechazado" || estado ==! "aceptado"){
+            const error = new Error('El estado no es valido');
+            error.statusCode = 400;
+            throw error;
+        }
+        let query = 'UPDATE interdeposito SET estado = $1 WHERE id= $2';
 
 
+        const result = await pool.query(query, [estado, id]);
+            
+        if(result.rowCount === 0) {
+            const error = new Error('No se encontró el interdeposito solicitado para actualizar');
+            error.statusCode = 404;
+            throw error;
+        }
 
-// router.get("/insumo/:ID",async(req,res)=>
-//     {
-//         const ID = req.params.ID;
+        if(estado == "aceptado" && Array.from(insumos).length){
+            
+            let query2 = 'UPDATE insumo SET cantidad = cantidad + $1, interdeposito_id = $2 WHERE id= $3'
 
-//         let SQL = 'select * from insumo where idinsumo = $1';
+            try {
+                response = await Promise.all(Array.from(insumos).map(async (insumo)=>{
+                    const updatedInsumo = await pool.query(query2, [insumo.cantidad, id, insumo.id]);
+                    
+                    if (updatedInsumo.rowCount === 0) {
+                        const error = new Error(`No se encontró el insumo con id ${insumo.id} para actualizar`);
+                        error.statusCode = 404;
+                        throw error;
+                    }
+                }))
+                
+                res.json({
+                    success: true,
+                    result_message: 'interdeposito y stock actualizados de forma exitosa!',
+                    result_rows: result.rowCount,
+                    result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
+                    result_data: result.rows[0],
+                });
 
-//         let Resultado = '';
+            }
+            catch(error){
+                const err = new Error(error.message);
+                throw err;
+            }
+        }else{   
+            res.json({
+                success: true,
+                result_message: 'interdeposito actualizado de forma exitosa!',
+                result_rows: result.rowCount,
+                result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
+                result_data: result.rows,
+            });
+        }
 
-//         try {
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
+            result_data: '',
+        });
+    }
+});
 
-//             Resultado = await pool.query(SQL,[ID]);
-
-//             Salida = 
-//             {
-//                 result_estado:'ok',
-//                 result_message:'insumo recuperado por ID',
-//                 result_rows:Resultado.rowCount,
-//                 result_proceso:'GET INSUMO POR ID',
-//                 result_data:Resultado.rows[0] 
-//             }          
-
-//         } catch (error) 
-//         {
-//             Salida = 
-//             {
-//                 result_estado:'error',
-//                 result_message:error.message,
-//                 result_rows:0,
-//                 result_proceso:'GET INSUMO POR ID',
-//                 result_data:''
-//             }        
-//         }
-//         res.json(Salida);
-//     })
-
-
-// /***************************************************************************************/
-// /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (CATEGORIA INSUMO) */
-// /***************************************************************************************/
-
-// router.get("/categoria/",async(req,res)=>
-//     {
-//         const CATEGORIA = req.query.categoria;
-
-//         let SQL = 'select * from insumo where categoria like $1 limit 50';
-
-//         let Resultado = '';
-
-//         try {
-
-//             Resultado = await pool.query(SQL,[`%${CATEGORIA}%`]);
-
-//             Salida = 
-//             {
-//                 result_estado:'ok',
-//                 result_message:'Insumo recuperado por categoria',
-//                 result_rows:Resultado.rowCount,
-//                 result_proceso:'GET INSUMO POR CATEGORIA',
-//                 result_data:Resultado.rows
-//             }        
-
-//         } catch (error) 
-//         {
-//             Salida = 
-//             {
-//                 result_estado:'error',
-//                 result_message:error.message,
-//                 result_rows:0,
-//                 result_proceso:'GET INSUMO POR CATEGORIA',
-//                 result_data:''
-//             }        
-//         }
-//         res.json(Salida);
-//     })
 
 // /************************************************************************************/
 // /* Segundo => END POINT => Servicio WEB => Servicio REST => Get por (NOMBRE INSUMO) */

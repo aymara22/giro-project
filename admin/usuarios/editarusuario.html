@@ -107,6 +107,7 @@
       let nombre_usuario = document.querySelector("#nombreUsuario").value;
       let email = document.querySelector("#email").value;
       let tipo_usuario = document.querySelector('select[name="tipoRol"]').value;
+      let punto_de_control_id = document.querySelector('select[name="puntoDeControl"]').value;
       let activo = document.querySelector('input[name="habilitado"]:checked').value;
 
       const usuarioData = {
@@ -115,7 +116,8 @@
         nombre_usuario,
         email,
         tipo_usuario,
-        activo
+        activo,
+        punto_de_control_id
       };
 
       // Si el usuario confirma, proceder a eliminar
@@ -190,6 +192,14 @@
                       <select id="tipoRol" name="tipoRol" required>
                           <option value="ADMIN" ${user.tipo_usuario === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
                           <option value="VIEWER" ${user.tipo_usuario === 'VIEWER' ? 'selected' : ''}>VIEWER</option>
+                      </select>
+                    
+                    <label for="puntoDeControl">Tipo de Rol:</label>
+                      <select id="puntoDeControl" name="puntoDeControl" required>
+                          <option value="2" ${user.punto_de_control === 'Chacarita' ? 'selected' : ''}>Chacarita</option>
+                          <option value="3" ${user.punto_de_control === 'Oficina' ? 'selected' : ''}>Oficina</option>
+                          <option value="4" ${user.punto_de_control === 'Predio Ferial' ? 'selected' : ''}>Predio Ferial</option>
+                          <option value="5" ${user.punto_de_control === 'Valle chico' ? 'selected' : ''}>Valle chico</option>
                       </select>
 
                     <label for="nombreCompleto">Nombre usuario</label>

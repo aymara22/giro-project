@@ -84,7 +84,6 @@
                 });
 
                 const result = await response.json();
-                console.log(result)
                 
                 if (result.success) {
     
@@ -94,7 +93,7 @@
                             'success'
                     ).then(() => {
                         localStorage.setItem('isLoggedIn', 'true');
-                        localStorage.setItem('userSession', nombreUsuario);
+                        localStorage.setItem('userSession', result.result_data.id);
                         window.location.href= "../index.html";
                     });
 

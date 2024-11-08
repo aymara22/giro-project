@@ -64,8 +64,18 @@
         <!-- Tipo de Rol -->
         <label for="txtTipoRolUsuario">Tipo de Rol:</label>
         <select id="txtTipoRolUsuario" name="tipo_rol" required>
+            <option value="" disabled selected>Selecciona una opción</option>
             <option value="ADMIN">ADMIN</option>
             <option value="VIEWR">VIEWER</option>
+        </select><br><br>
+
+        <label for="txtPuntoDeControl">Punto De Control:</label>
+        <select id="txtPuntoDeControl" name="punto_de_control" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="2">Chacarita</option>
+            <option value="3">Oficina</option>
+            <option value="4">Predio Ferial</option>
+            <option value="5">Valle Chico</option>
         </select><br><br>
 
         <!-- Contraseña -->
@@ -132,6 +142,9 @@
                 let tipo_usuario = txtTipoRolUsuario.value;
                 let password = txtContraseñaUsuario.value;
                 let activo = document.querySelector('input[name="habilitado"]:checked').value;
+                let punto_de_control_id= txtPuntoDeControl.value;
+                
+
 
                 const usuarioData = {
                     nombre_completo,
@@ -140,7 +153,8 @@
                     email,
                     tipo_usuario,
                     password,
-                    activo
+                    activo,
+                    punto_de_control_id
                 };
 
 
@@ -171,6 +185,7 @@
                         txtDNIUsuario.value = '';
                         txtEmailUsuario.value = '';
                         txtTipoRolUsuario.value = '';
+                        txtPuntoDeControl.value= '';
                         txtContraseñaUsuario.value = '';
                         document.querySelector('input[name="habilitado"]:checked').checked = false;
 

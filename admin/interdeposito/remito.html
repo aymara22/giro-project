@@ -1,97 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <title>remito</title>
     <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
     <link rel="stylesheet" href="/style/indexadmin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/style/formulariointerde.css">
-  </head>
+</head>
 
-  <body>
-    
-  <body>
-    <header>
-        <div class="logo-container">
-            <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
-        </div>
-        <div class="title-container">
-            <h1>PUNTO GIRO</h1>
-            <h2>CONTROL DE STOCK</h2>
-        </div>
-        <div>
-          <button type="button" class="logOut">cerrar sesion</button>
-        </div>
-    </header>
-    <nav>
-      <ul>
-          <li>
-              <a href="/admin/index.html">
-                  <i class="fas fa-home"></i>>
-              </a>
-          </li>
-          <li><a href="/admin/interdeposito/interdepoadmin.html">interdeposito ></a></li>
-          <li><a href="">remito</a></li>
-      </ul>
-  </nav>
-<br>
-<br>
-<h2>Formulario de Remito</h2>
-<form id="remitoForm">
-    <!-- Número de Remito -->
-    <label for="numeroRemito">Número de Remito:</label>
-    <input type="text" id="numeroRemito" name="numeroRemito" required>
-    <br>
-    <br>
-    <br>
+<body>
 
-    <!-- Tabla de Insumos -->
-    <table id="tablaInsumos">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Cantidad</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Fila de ejemplo, se pueden agregar filas adicionales según sea necesario -->
-            <tr>
-                <td>1</td>
-                <td>Insumo Ejemplo</td>
-                <td><input type="number" name="cantidad[]" min="1" required></td>
-                <td>
-                    <select name="estado[]">
-                        <option value="listo">Listo</option>
-                        <option value="roto">Roto</option>
-                        <option value="no_apto">No Apto</option>
-                    </select>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <body>
+        <header>
+            <div class="logo-container">
+                <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+            </div>
+            <div class="title-container">
+                <h1>PUNTO GIRO</h1>
+                <h2>CONTROL DE STOCK</h2>
+            </div>
+            <div>
+                <button type="button" class="logOut">cerrar sesion</button>
+            </div>
+        </header>
+        <nav>
+            <ul>
+                <li>
+                    <a href="/admin/index.html">
+                        <i class="fas fa-home"></i>>
+                    </a>
+                </li>
+                <li><a href="/admin/interdeposito/interdepoadmin.html">interdeposito ></a></li>
+                <li><a href="">remito</a></li>
+            </ul>
+        </nav>
+        <br>
+        <br>
+        <h2>Formulario de Remito</h2>
+        <form id="remitoForm" action="PUT">
+            <!-- Número de Remito -->
+            <label for="numeroRemito">Número de Interdeposito:</label>
+            <input type="text" id="numeroRemito" name="numeroRemito" required>
+            <br>
+            <br>
+            <button type="button" class="btnBuscar">buscar</button>
+            <br>
 
-    <!-- Botones Confirmar y Cancelar -->
-    <div class="button-container">
-        <button type="submit" class="confirmar">Confirmar</button>
-        <button type="reset" class="cancelar">Cancelar</button>
-    </div>
-</form>
-<br>
-<br>
-<br>
-<br>
+            <!-- Tabla de Insumos -->
+            <table class="tablaInsumos">
+                <thead class="thead" hidden>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Fila de ejemplo, se pueden agregar filas adicionales según sea necesario -->
 
-<footer>
-    <div class="footer-content">
-        <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
-       <!-- <p>Diseñado por [Tu Nombre]</p> -->
-    </div>
-</footer>
-  </body>
+                </tbody>
+            </table>
+
+            <!-- Botones Confirmar y Cancelar -->
+            <div class="button-container">
+                <button type="button" class="confirmar">Validacion</button>
+                <button type="reset" class="cancelar">Cancelar</button>
+            </div>
+        </form>
+        <br>
+        <br>
+        <br>
+        <br>
+
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+                <!-- <p>Diseñado por [Tu Nombre]</p> -->
+            </div>
+        </footer>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const btnBuscar = document.querySelector(".btnBuscar");
+        const btnCancelar = document.querySelector(".cancelar");
+        const btnConfirmar = document.querySelector(".confirmar")
+
+
+        btnCancelar.addEventListener("click", () => {
+            limpiarCampos()
+        })
+
+        function limpiarCampos(){
+            let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
+            tabla.innerHTML = ''
+            document.querySelector(".thead").hidden = true;
+            document.querySelector(".btnBuscar").disabled = false;
+            document.getElementById("numeroRemito").disabled = false
+        }
+
+        btnBuscar.addEventListener("click", async function (event) {
+            const remito = document.getElementById("numeroRemito").value || 0;
+            const response = await fetch(`http://localhost:3000/api-giro/interdeposito/${remito}`)
+            const result = await response.json();
+            console.log(result)
+            if (result.success == true) {
+                Swal.fire({
+                    icon: 'success',
+                    title: result.result_message,
+                    text: 'Interdeposito encontrado!',
+                }).then(() => {
+                    let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
+                    document.querySelector(".thead").hidden = false;
+                    document.querySelector(".btnBuscar").disabled = true;
+                    document.getElementById("numeroRemito").disabled = true
+                    let jsonInsumos = JSON.parse(result.result_data.insumos)
+                    jsonInsumos.forEach(element => {
+
+                        let tr = document.createElement("tr")
+                        tr.innerHTML = `
+                            <td>${element.id}</td>
+                            <td>${element.nombre_insumo}</td>
+                            <td>${element.cantidad}</td>
+                            `
+                        tabla.append(tr)
+                    })
+
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: result.result_message,
+                    text: 'No existe dicho interdeposito',
+                });
+            }
+        });
+
+        btnConfirmar.addEventListener("click", (e) => {
+            Swal.fire({
+                title: '¿Desea aprobar el interdeposito?',
+                text: "Puedes aprobar o desaprobar el interdeposito.",
+                icon: 'question',
+                showCancelButton: true,
+                cancelButtonText: 'Rechazar',
+                confirmButtonText: 'Aprobar'
+            }).then(async (res) => {
+                let data = {}
+                if (res.isConfirmed) {
+                    let numeroRemito = document.querySelector('#numeroRemito').value;
+                    let tabla = document.querySelector(".tablaInsumos").querySelector("tbody").querySelectorAll("tr")
+                    insumos = await Promise.all(Array.from(tabla).map(async (insumo)=>{
+                        const id = insumo.querySelector("td:first-child").textContent;
+                        const cantidad = insumo.querySelector("td:last-child").textContent;
+                        return { id, cantidad };
+                    }))
+
+                    data = {estado: "aceptado", id: numeroRemito, insumos: insumos}
+                } else if (res.dismiss === Swal.DismissReason.cancel) {
+                    let numeroRemito = document.querySelector('#numeroRemito').value;
+                    data= {estado: "rechazado", id: numeroRemito}
+                }
+
+                const response = await fetch(`http://localhost:3000/api-giro/interdeposito/${data.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                const result = await response.json();
+                if(result.success == true){
+                    Swal.fire({
+                        icon: 'success',
+                        title: result.result_message,
+                        text: 'Actualizacion satisfactoria!',
+                    }).then(()=>{
+                        limpiarCampos()
+                    })
+                }else{
+                    Swal.fire({
+                        icon: 'error',
+                        title: result.result_message,
+                        text: 'Actualizacion errada!',
+                    });
+                }
+                
+            });
+
+        })
+    </script>
+
 </html>

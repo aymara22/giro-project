@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <title>formulainterdepo</title>
     <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/style/formulariointerde.css">
-  </head>
-  <body>
+</head>
+
+<body>
     <header>
         <div class="logo-container">
             <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
@@ -21,127 +24,234 @@
         </div>
     </header>
     <nav>
-      <ul>
-          <li>
-              <a href="/admin/index.html">
-                  <i class="fas fa-home"></i>>
-              </a>
-          </li>
-          <li><a href="/admin/interdeposito/interdepoadmin.html">interdeposito ></a></li>
-          <li><a href="">formulario</a></li>
-      </ul>
-  </nav>
-  <br>
-  <br>
-  <h2>Formulario de Interdepósito</h2>
-  <form id="interdepositoForm" action="/procesar_interdeposito" method="POST">
-      <!-- Origen -->
-      <label for="origen">Origen:</label>
-      <select id="origen" name="origen" required>
-          <option value="Chacarita">Chacarita</option>
-          <option value="Valle Chico">Valle Chico</option>
-          <option value="Predio Ferial">Predio Ferial</option>
-          <option value="Oficina">Oficina</option>
-      </select>
+        <ul>
+            <li>
+                <a href="/admin/index.html">
+                    <i class="fas fa-home"></i>>
+                </a>
+            </li>
+            <li><a href="/admin/interdeposito/interdepoadmin.html">interdeposito ></a></li>
+            <li><a href="">formulario</a></li>
+        </ul>
+    </nav>
+    <br>
+    <br>
+    <h2>Formulario de Interdepósito</h2>
+    <form id="interdepositoForm" method="POST">
+        <!-- Origen -->
+        <label for="origen">Origen:</label>
+        <select id="origen" name="origen" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="2">Chacarita</option>
+            <option value="3">Oficina</option>
+            <option value="4">Predio Ferial</option>
+            <option value="5">Valle Chico</option>
+        </select>
 
-      <!-- Destino -->
-      <label for="destino">Destino:</label>
-      <select id="destino" name="destino" required>
-          <option value="Chacarita">Chacarita</option>
-          <option value="Valle Chico">Valle Chico</option>
-          <option value="Predio Ferial">Predio Ferial</option>
-          <option value="Oficina">Oficina</option>
-      </select>
+        <!-- Destino -->
+        <label for="destino">Destino:</label>
+        <select id="destino" name="destino" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="2">Chacarita</option>
+            <option value="3">Oficina</option>
+            <option value="4">Predio Ferial</option>
+            <option value="5">Valle Chico</option>
+        </select>
 
-      <!-- Fecha y Hora -->
-      <label for="fecha">Fecha de Emisión:</label>
-      <input type="date" id="fecha" name="fecha" required>
+        <label for="">Email: </label>
+        <input type="email" id="email">
 
-      <label for="hora">Hora de Emisión:</label>
-      <input type="time" id="hora" name="hora" required>
+        <!-- Botones Confirmar y Cancelar -->
+        <div class="button-container">
+            <button type="button" class="confirmar" onclick="mostrarInsumos()">Agregar Insumos</button>
+            <button type="reset" class="cancelar">Cancelar</button>
+        </div>
 
-      <!-- Botones Confirmar y Cancelar -->
-      <div class="button-container">
-          <button type="button" class="confirmar" onclick="mostrarInsumos()">Confirmar</button>
-          <button type="reset" class="cancelar">Cancelar</button>
-      </div>
+        <!-- Campos para Añadir Insumos (Ocultos hasta Confirmar) -->
+        <div id="insumoContainer" style="display: none; margin-top: 20px;">
+            <h3>Insumos</h3>
+            <div class="button-row">
+                <input type="text" id="buscarInsumo" list="insumos" placeholder="Buscar insumo">
+                <datalist id="insumos"></datalist>
+                <input type="number" id="cantidadInsumo" placeholder="Cantidad" min="1">
+                <button type="button" class="añadir" onclick="añadirInsumo()">Añadir</button>
+            </div>
 
-      <!-- Campos para Añadir Insumos (Ocultos hasta Confirmar) -->
-      <div id="insumoContainer" style="display: none; margin-top: 20px;">
-          <h3>Agregar Insumos</h3>
-          <div class="button-row">
-              <input type="text" id="buscarInsumo" placeholder="Buscar insumo">
-              <input type="number" id="cantidadInsumo" placeholder="Cantidad" min="1">
-              <button type="button" class="añadir" onclick="añadirInsumo()">Añadir</button>
-          </div>
+            <!-- Tabla de Insumos -->
+            <table id="insumosTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Aquí se agregarán los insumos -->
+                </tbody>
+            </table>
 
-          <!-- Tabla de Insumos -->
-          <table id="insumosTable">
-              <thead>
-                  <tr>
-                      <th>ID</th>
-                      <th>Nombre</th>
-                      <th>Cantidad</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <!-- Aquí se agregarán los insumos -->
-              </tbody>
-          </table>
+            <!-- Botones Enviar y Cancelar para los detalles del interdepósito -->
+            <div class="button-container">
+                <button type="button" class="confirmar" onclick="guardarInterdeposito()">Enviar</button>
+                <button type="button" class="cancelar-detalle" onclick="cancelarInsumos()">Cancelar</button>
+            </div>
+        </div>
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Función para mostrar los campos de insumo
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarInsumos()
+        })
+        
+        async function guardarInterdeposito(){
+            try {
+                const origen= document.getElementById("origen").value
+                const destino= document.getElementById("destino").value
+                const email = document.getElementById("email").value
+                const usuario_id = localStorage.getItem("userSession")
+                const trs = document.getElementById('insumosTable').querySelector('tbody').querySelectorAll('tr')
+                if (origen === "" || destino === "") {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campos incompletos',
+                        text: 'Origen o destino sin diligenciar',
+                    });
+                } else if (origen === destino) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de selección',
+                        text: 'El origen y destino no pueden ser iguales',
+                    });
+                } else if (email === "") {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campo vacío',
+                        text: 'El campo email está vacío',
+                    });
+                }   else if(Array.from(trs).length == 0){
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sin insumos!',
+                        text: 'Aun no has agregado los insumos',
+                    });
+                } 
+                insumos= Array.from(trs).map((insumo)=>{
+                    return {id: insumo.children[0].textContent, nombre_insumo: insumo.children[1].textContent, cantidad: insumo.children[2].textContent}
+                })
 
-          <!-- Botones Enviar y Cancelar para los detalles del interdepósito -->
-          <div class="button-container">
-              <button type="submit" class="confirmar">Enviar</button>
-              <button type="button" class="cancelar-detalle" onclick="cancelarInsumos()">Cancelar</button>
-          </div>
-      </div>
-  </form>
+                const interdepositoData= {
+                    origen,
+                    destino,
+                    email,
+                    usuario_id,
+                    insumos
+                }
+               const response = await fetch('http://localhost:3000/api-giro/interdeposito/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(interdepositoData)
+                    })
+                const result = await response.json();
+                console.log(result)
+                if (result.success == true) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: result.result_message,
+                        text: 'El interdeposito ha sido creado con éxito',
+                        }).then(()=>{
+                            window.location.href= "historial.html";
+                        });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: result.result_message,
+                        text: 'El interdeposito no se pudo crear',
+                        });
+                }
+            } catch (error) {
+                console.error('Error al intentar guardar interdeposito:', error);
+            }
+        }
 
-  <script>
-      // Función para mostrar los campos de insumo
-      function mostrarInsumos() {
-          document.getElementById('insumoContainer').style.display = 'block';
-      }
+        async function cargarInsumos() {
+            try {
+                const response = await fetch(
+                'http://localhost:3000/api-giro/insumo/'); // Reemplaza con la URL de tu endpoint
+                const insumos = await response.json();
 
-      // Función para añadir insumo a la tabla
-      function añadirInsumo() {
-          const insumoNombre = document.getElementById('buscarInsumo').value;
-          const cantidad = document.getElementById('cantidadInsumo').value;
-          if (!insumoNombre || !cantidad) {
-              alert("Por favor, ingrese el nombre y la cantidad del insumo.");
-              return;
-          }
+                // Asumiendo que `insumos` es una lista de objetos con una propiedad "nombre" o similar
+                const dataList = document.getElementById('insumos');
+                dataList.innerHTML = ''; // Limpiar opciones previas
 
-          // Crear una nueva fila en la tabla
-          const table = document.getElementById('insumosTable').querySelector('tbody');
-          const row = document.createElement('tr');
+                insumos.result_data.forEach(insumo => {
+                    const option = document.createElement('option');
+                    option.value = insumo.nombre_insumo;
+                    option.setAttribute("data-id", insumo.id)
+                    dataList.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar insumos:', error);
+            }
+        }
 
+        function mostrarInsumos() {
+            document.getElementById('insumoContainer').style.display = 'block';
+        }
 
-          // Añadir la fila a la tabla
-          table.appendChild(row);
+        // Función para añadir insumo a la tabla
+        function añadirInsumo() {
+            const insumoNombre = document.getElementById('buscarInsumo');
+            const cantidad = document.getElementById('cantidadInsumo').value;
+            const dataList = document.getElementById('insumos')
+            if (!insumoNombre || !cantidad) {
+                alert("Por favor, ingrese el nombre y la cantidad del insumo.");
+                return;
+            }
 
-          // Limpiar campos de insumo
-          document.getElementById('buscarInsumo').value = '';
-          document.getElementById('cantidadInsumo').value = '';
-      }
+            // Crear una nueva fila en la tabla
+            const table = document.getElementById('insumosTable').querySelector('tbody');
+            const row = document.createElement('tr');
+            
+            const option = Array.from(dataList.options).find(opt => opt.value === insumoNombre.value);
 
-      // Función para cancelar y ocultar el formulario de insumos
-      function cancelarInsumos() {
-          document.getElementById('insumoContainer').style.display = 'none';
-          document.getElementById('insumosTable').querySelector('tbody').innerHTML = '';
-      }
-  </script>
+            row.innerHTML = `
+                <tr>
+                    <th>${option.getAttribute('data-id')}</th>
+                    <th>${insumoNombre.value}</th>
+                    <th>${cantidad}</th>
+                </tr>
+            `
 
-  <br>
-  <br>
-  <br>
-  <br>
+            // Añadir la fila a la tabla
+            table.appendChild(row);
 
-  <footer>
-    <div class="footer-content">
-        <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
-       <!-- <p>Diseñado por [Tu Nombre]</p> -->
-    </div>
-</footer>
-  </body>
+            // Limpiar campos de insumo
+            document.getElementById('buscarInsumo').value = '';
+            document.getElementById('cantidadInsumo').value = '';
+        }
+
+        // Función para cancelar y ocultar el formulario de insumos
+        function cancelarInsumos() {
+            document.getElementById('insumoContainer').style.display = 'none';
+            document.getElementById('insumosTable').querySelector('tbody').innerHTML = '';
+        }
+    </script>
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+            <!-- <p>Diseñado por [Tu Nombre]</p> -->
+        </div>
+    </footer>
+</body>
+
 </html>

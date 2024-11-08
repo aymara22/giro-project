@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <head>
+        <title>formulainterdepo</title>
+        <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+            rel="stylesheet">
+        <link rel="stylesheet" href="/style/index.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link rel="stylesheet" href="/style/formulariointerde.css">
+    </head>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>PUNTO GIRO</h1>
+            <h2>CONTROL DE STOCK</h2>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li>
+                <a href="/admin/index.html">
+                    <i class="fas fa-home"></i>>
+                </a>
+            </li>
+            <li><a href="/admin/interdeposito/interdepoadmin.html">interdeposito ></a></li>
+            <li><a href="">formulario</a></li>
+        </ul>
+    </nav>
+    <h1>Historial de Interdeposito</h1>
+
+    <table id="historialTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Insumos</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Fecha de Creación</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los registros se insertarán aquí mediante JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        // Función para obtener los datos del historial
+        async function obtenerHistorial() {
+            try {
+                const response = await fetch('http://localhost:3000/api-giro/interdeposito/');
+                const data = await response.json();
+                console.log(data)
+                // Verificamos si la respuesta fue exitosa
+                if (data.success && data.result_data.length > 0) {
+                    const historial = data.result_data;
+                    console.log(historial)
+                    // Obtener el tbody de la tabla
+                    const tbody = document.getElementById('historialTable').getElementsByTagName('tbody')[0];
+
+                    // Limpiar la tabla antes de agregar nuevos datos
+                    tbody.innerHTML = '';
+
+                    // Iterar sobre los registros y agregarlos a la tabla
+                    historial.forEach(registro => {
+                        const row = tbody.insertRow();
+
+                        // Insertar celdas en cada fila
+                        row.insertCell(0).textContent = registro.id;
+                        row.insertCell(1).textContent = registro.email;
+                        row.insertCell(2).textContent = registro.insumos.join(', ');  // Mostrar insumos como texto separado por coma
+                        row.insertCell(3).textContent = registro.origen;
+                        row.insertCell(4).textContent = registro.destino;
+                        row.insertCell(5).textContent = registro.fecha_creacion;
+                        row.insertCell(6).textContent = registro.nombre_usuario;
+                    });
+                } else {
+                    // Si no hay registros, dejamos la tabla vacía sin mostrar errores
+                    const tbody = document.getElementById('historialTable').getElementsByTagName('tbody')[0];
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay registros disponibles.</td></tr>';
+                }
+            } catch (error) {
+                // En caso de error, simplemente no mostramos nada y no generamos alertas
+                console.error('Error al obtener los datos:', error);
+            }
+        }
+
+        // Cargar los datos cuando se cargue la página
+        window.onload = obtenerHistorial;
+    </script>
+
+</body>
+</html>

@@ -38,7 +38,7 @@ button {
 }
 
 button.confirmar {
-    background-color: green;
+    background-color: rgba(0, 255, 179, 0.883);
     width: 48%;
 }
 
