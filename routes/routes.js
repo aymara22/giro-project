@@ -404,7 +404,7 @@ router.post("/interdeposito/", async (req, res) => {
 
 router.get("/insumo/", async (req, res) => {
 
-    let query = 'select * from insumo where apto=true';
+    let query = 'select * from insumo';
 
     let result = '';
 

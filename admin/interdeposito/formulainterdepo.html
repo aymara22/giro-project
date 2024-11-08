@@ -103,58 +103,80 @@
         // Función para mostrar los campos de insumo
         document.addEventListener("DOMContentLoaded", () => {
             cargarInsumos()
+            cerrarSesion();
+            validarSesion();
         })
-        
-        async function guardarInterdeposito(){
+
+        function cerrarSesion() {
+            let cerrarSesion = document.querySelector(".logOut")
+            cerrarSesion.addEventListener("click", function () {
+                localStorage.clear()
+                window.location.href = "../auth/login.html"
+            })
+        }
+
+        function validarSesion() {
+            let sesion = localStorage.getItem("isLoggedIn")
+            let userSession = localStorage.getItem("userSession")
+            if (!sesion || !userSession) {
+                window.location.href = "../auth/login.html"
+            }
+        }
+
+        async function guardarInterdeposito() {
             try {
-                const origen= document.getElementById("origen").value
-                const destino= document.getElementById("destino").value
+                const origen = document.getElementById("origen").value
+                const destino = document.getElementById("destino").value
                 const email = document.getElementById("email").value
                 const usuario_id = localStorage.getItem("userSession")
                 const trs = document.getElementById('insumosTable').querySelector('tbody').querySelectorAll('tr')
-                if (origen === "" || destino === "") {
+                if (origen == "" || destino == "") {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Campos incompletos',
                         text: 'Origen o destino sin diligenciar',
                     });
-                } else if (origen === destino) {
+                } else if (origen == destino) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error de selección',
                         text: 'El origen y destino no pueden ser iguales',
                     });
-                } else if (email === "") {
+                } else if (email == "") {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Campo vacío',
                         text: 'El campo email está vacío',
                     });
-                }   else if(Array.from(trs).length == 0){
+                } else if (Array.from(trs).length == 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Sin insumos!',
                         text: 'Aun no has agregado los insumos',
                     });
-                } 
-                insumos= Array.from(trs).map((insumo)=>{
-                    return {id: insumo.children[0].textContent, nombre_insumo: insumo.children[1].textContent, cantidad: insumo.children[2].textContent}
+                }
+                insumos = Array.from(trs).map((insumo) => {
+                    return {
+                        id: insumo.children[0].textContent,
+                        nombre_insumo: insumo.children[1].textContent,
+                        cantidad: insumo.children[2].textContent
+                    }
                 })
 
-                const interdepositoData= {
+                const interdepositoData = {
                     origen,
                     destino,
                     email,
                     usuario_id,
                     insumos
                 }
-               const response = await fetch('http://localhost:3000/api-giro/interdeposito/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(interdepositoData)
-                    })
+                const response = await fetch('http://localhost:3000/api-giro/interdeposito/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(interdepositoData)
+                })
                 const result = await response.json();
                 console.log(result)
                 if (result.success == true) {
@@ -162,15 +184,15 @@
                         icon: 'success',
                         title: result.result_message,
                         text: 'El interdeposito ha sido creado con éxito',
-                        }).then(()=>{
-                            window.location.href= "historial.html";
-                        });
+                    }).then(() => {
+                        window.location.href = "historial.html";
+                    });
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: result.result_message,
                         text: 'El interdeposito no se pudo crear',
-                        });
+                    });
                 }
             } catch (error) {
                 console.error('Error al intentar guardar interdeposito:', error);
@@ -180,7 +202,7 @@
         async function cargarInsumos() {
             try {
                 const response = await fetch(
-                'http://localhost:3000/api-giro/insumo/'); // Reemplaza con la URL de tu endpoint
+                    'http://localhost:3000/api-giro/insumo/'); // Reemplaza con la URL de tu endpoint
                 const insumos = await response.json();
 
                 // Asumiendo que `insumos` es una lista de objetos con una propiedad "nombre" o similar
@@ -215,9 +237,9 @@
             // Crear una nueva fila en la tabla
             const table = document.getElementById('insumosTable').querySelector('tbody');
             const row = document.createElement('tr');
-            
-            const option = Array.from(dataList.options).find(opt => opt.value === insumoNombre.value);
 
+            const option = Array.from(dataList.options).find(opt => opt.value === insumoNombre.value);
+            console.log(option)
             row.innerHTML = `
                 <tr>
                     <th>${option.getAttribute('data-id')}</th>

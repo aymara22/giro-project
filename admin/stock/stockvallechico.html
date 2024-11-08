@@ -124,7 +124,26 @@
     </footer>
 
     <script>
-        // Coordenadas del punto de "Valle Chico"
+        document.addEventListener('DOMContentLoaded', function () {
+            cerrarSesion();
+            validarSesion();
+          });
+        
+          function cerrarSesion() {
+            let cerrarSesion = document.querySelector(".logOut")
+            cerrarSesion.addEventListener("click", function () {
+              localStorage.clear()
+              window.location.href = "../auth/login.html"
+            })
+          }
+        
+          function validarSesion() {
+            let sesion = localStorage.getItem("isLoggedIn")
+            let userSession = localStorage.getItem("userSession")
+            if (!sesion || !userSession) {
+              window.location.href = "../auth/login.html"
+            }
+          }
         
         const lat = -28.49684812552563 // Ejemplo de latitud
         const lon = -65.8161940182763 // Ejemplo de longitud

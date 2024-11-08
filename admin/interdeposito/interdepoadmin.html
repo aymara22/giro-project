@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <title>interdepoadmin</title>
     <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
     <link rel="stylesheet" href="/style/indexadmin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/style/tablas.css">
-  </head>
+</head>
 
-  <body>
+<body>
     <header>
         <div class="logo-container">
             <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
@@ -26,46 +28,69 @@
         </div>
     </header>
     <nav>
-      <ul>
-          <li>
-              <a href="/admin/index.html">
-                  <i class="fas fa-home"></i>>
-              </a>
-          </li>
-          <li><a href="">interdeposito</a></li>
-      </ul>
-  </nav>
-  <br>
-  <br>
-  <div class="container">
-    <div class="image-box">
-        <h3>FORMULARIO</h3>
-        <a href="/admin/interdeposito/formulainterdepo.html">
-            <img src="/img/certificadogiro.jpeg" alt="Interfaz 1">
-        </a>
+        <ul>
+            <li>
+                <a href="/admin/index.html">
+                    <i class="fas fa-home"></i>>
+                </a>
+            </li>
+            <li><a href="">interdeposito</a></li>
+        </ul>
+    </nav>
+    <br>
+    <br>
+    <div class="container">
+        <div class="image-box">
+            <h3>FORMULARIO</h3>
+            <a href="/admin/interdeposito/formulainterdepo.html">
+                <img src="/img/certificadogiro.jpeg" alt="Interfaz 1">
+            </a>
+        </div>
+        <div class="image-box">
+            <h3>HISTORIAL</h3>
+            <a href="/admin/interdeposito/historial.html">
+                <img src="/img/historialgiro.jpeg" alt="Interfaz 2">
+            </a>
+        </div>
+        <div class="image-box">
+            <h3>REMITO</h3>
+            <a href="/admin/interdeposito/remito.html">
+                <img src="/img/remitogiro.jpeg" alt="Interfaz 2">
+            </a>
+        </div>
     </div>
-    <div class="image-box">
-        <h3>HISTORIAL</h3>
-        <a href="/admin/interdeposito/historial.html">
-            <img src="/img/historialgiro.jpeg" alt="Interfaz 2">
-        </a>
-    </div>
-  <div class="image-box">
-    <h3>REMITO</h3>
-    <a href="/admin/interdeposito/remito.html">
-        <img src="/img/remitogiro.jpeg" alt="Interfaz 2">
-    </a>
-    </div>
-</div>
- <br> 
-<br>
+    <br>
+    <br>
 
 
-  <footer>
-    <div class="footer-content">
-        <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
-       <!-- <p>Diseñado por [Tu Nombre]</p> -->
-    </div>
-</footer>
-  </body>
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
+            <!-- <p>Diseñado por [Tu Nombre]</p> -->
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            cerrarSesion();
+            validarSesion();
+        });
+
+        function cerrarSesion() {
+            let cerrarSesion = document.querySelector(".logOut")
+            cerrarSesion.addEventListener("click", function () {
+                localStorage.clear()
+                window.location.href = "../auth/login.html"
+            })
+        }
+
+        function validarSesion() {
+            let sesion = localStorage.getItem("isLoggedIn")
+            let userSession = localStorage.getItem("userSession")
+            if (!sesion || !userSession) {
+                window.location.href = "../auth/login.html"
+            }
+        }
+    </script>
+</body>
+
 </html>

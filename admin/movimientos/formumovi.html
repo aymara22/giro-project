@@ -6,7 +6,28 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      cerrarSesion();
+      validarSesion();
+    });
+  
+    function cerrarSesion() {
+      let cerrarSesion = document.querySelector(".logOut")
+      cerrarSesion.addEventListener("click", function () {
+        localStorage.clear()
+        window.location.href = "../auth/login.html"
+      })
+    }
+  
+    function validarSesion() {
+      let sesion = localStorage.getItem("isLoggedIn")
+      let userSession = localStorage.getItem("userSession")
+      if (!sesion || !userSession) {
+        window.location.href = "../auth/login.html"
+      }
+    }
+  </script>
   <body>
 
     

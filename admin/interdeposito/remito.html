@@ -87,6 +87,27 @@
     </body>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            cerrarSesion();
+            validarSesion();
+        });
+
+        function cerrarSesion() {
+            let cerrarSesion = document.querySelector(".logOut")
+            cerrarSesion.addEventListener("click", function () {
+                localStorage.clear()
+                window.location.href = "../auth/login.html"
+            })
+        }
+
+        function validarSesion() {
+            let sesion = localStorage.getItem("isLoggedIn")
+            let userSession = localStorage.getItem("userSession")
+            if (!sesion || !userSession) {
+                window.location.href = "../auth/login.html"
+            }
+        }
+
         const btnBuscar = document.querySelector(".btnBuscar");
         const btnCancelar = document.querySelector(".cancelar");
         const btnConfirmar = document.querySelector(".confirmar")
@@ -96,7 +117,7 @@
             limpiarCampos()
         })
 
-        function limpiarCampos(){
+        function limpiarCampos() {
             let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
             tabla.innerHTML = ''
             document.querySelector(".thead").hidden = true;
@@ -153,43 +174,57 @@
                 let data = {}
                 if (res.isConfirmed) {
                     let numeroRemito = document.querySelector('#numeroRemito').value;
-                    let tabla = document.querySelector(".tablaInsumos").querySelector("tbody").querySelectorAll("tr")
-                    insumos = await Promise.all(Array.from(tabla).map(async (insumo)=>{
-                        const id = insumo.querySelector("td:first-child").textContent;
-                        const cantidad = insumo.querySelector("td:last-child").textContent;
-                        return { id, cantidad };
+                    let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
+                        .querySelectorAll("tr")
+                    insumos = await Promise.all(Array.from(tabla).map(async (insumo) => {
+                        const id = insumo.querySelector("td:first-child")
+                            .textContent;
+                        const cantidad = insumo.querySelector("td:last-child")
+                            .textContent;
+                        return {
+                            id,
+                            cantidad
+                        };
                     }))
 
-                    data = {estado: "aceptado", id: numeroRemito, insumos: insumos}
+                    data = {
+                        estado: "aceptado",
+                        id: numeroRemito,
+                        insumos: insumos
+                    }
                 } else if (res.dismiss === Swal.DismissReason.cancel) {
                     let numeroRemito = document.querySelector('#numeroRemito').value;
-                    data= {estado: "rechazado", id: numeroRemito}
+                    data = {
+                        estado: "rechazado",
+                        id: numeroRemito
+                    }
                 }
 
-                const response = await fetch(`http://localhost:3000/api-giro/interdeposito/${data.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
+                const response = await fetch(
+                    `http://localhost:3000/api-giro/interdeposito/${data.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
                 const result = await response.json();
-                if(result.success == true){
+                if (result.success == true) {
                     Swal.fire({
                         icon: 'success',
                         title: result.result_message,
                         text: 'Actualizacion satisfactoria!',
-                    }).then(()=>{
+                    }).then(() => {
                         limpiarCampos()
                     })
-                }else{
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: result.result_message,
                         text: 'Actualizacion errada!',
                     });
                 }
-                
+
             });
 
         })
