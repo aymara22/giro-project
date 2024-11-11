@@ -59,6 +59,7 @@
                         <th>ID</th>
                         <th>Nombre</th>
                         <th>Cantidad</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,28 +132,48 @@
             const result = await response.json();
             console.log(result)
             if (result.success == true) {
-                Swal.fire({
-                    icon: 'success',
-                    title: result.result_message,
-                    text: 'Interdeposito encontrado!',
-                }).then(() => {
-                    let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
-                    document.querySelector(".thead").hidden = false;
-                    document.querySelector(".btnBuscar").disabled = true;
-                    document.getElementById("numeroRemito").disabled = true
-                    let jsonInsumos = JSON.parse(result.result_data.insumos)
-                    jsonInsumos.forEach(element => {
+                console.log({
+                    "a": result.result_data.estado,
+                    "b": "rechazado"
+                })
+                if (result.result_data.estado === "aceptado" || result.result_data.estado === "rechazado") {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: result.result_message,
+                        text: 'No puede ser modificado',
+                    });
+                } else {
 
-                        let tr = document.createElement("tr")
-                        tr.innerHTML = `
+                    Swal.fire({
+                        icon: 'success',
+                        title: result.result_message,
+                        text: 'Interdeposito encontrado!',
+                    }).then(() => {
+
+                        let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
+                        document.querySelector(".thead").hidden = false;
+                        document.querySelector(".btnBuscar").disabled = true;
+                        document.getElementById("numeroRemito").disabled = true
+                        let jsonInsumos = JSON.parse(result.result_data.insumos)
+                        jsonInsumos.forEach(element => {
+                            let tr = document.createElement("tr")
+                            tr.innerHTML = `
                             <td>${element.id}</td>
                             <td>${element.nombre_insumo}</td>
                             <td>${element.cantidad}</td>
+                            <td>
+                                <select name="estado" id="estado">
+                                    <option value="" disabled selected>Selecciona una opción</option>
+                                    <option value="apto">Apto</option>
+                                    <option value="no_apto">No apto</option>
+                                </select>
+                            </td>
                             `
-                        tabla.append(tr)
-                    })
+                            tabla.append(tr)
+                        })
+                    });
+                }
 
-                });
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -177,26 +198,28 @@
                     let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
                         .querySelectorAll("tr")
                     insumos = await Promise.all(Array.from(tabla).map(async (insumo) => {
-                        const id = insumo.querySelector("td:first-child")
-                            .textContent;
-                        const cantidad = insumo.querySelector("td:last-child")
-                            .textContent;
+                        const id = insumo.querySelector("td:first-child").textContent;
+                        const estado = insumo.querySelector("td:last-child");
+                        const cantidad = insumo.querySelector("td:nth-child(3)").textContent;
                         return {
                             id,
-                            cantidad
+                            cantidad,
+                            estado: estado.querySelector(("select[name='estado']")).value
                         };
                     }))
 
                     data = {
                         estado: "aceptado",
                         id: numeroRemito,
-                        insumos: insumos
+                        insumos: insumos,
+                        user_id: localStorage.getItem("userSession") 
                     }
                 } else if (res.dismiss === Swal.DismissReason.cancel) {
                     let numeroRemito = document.querySelector('#numeroRemito').value;
                     data = {
                         estado: "rechazado",
-                        id: numeroRemito
+                        id: numeroRemito,
+                        user_id: localStorage.getItem("userSession") 
                     }
                 }
 

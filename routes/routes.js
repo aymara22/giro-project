@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db")
-const {validarUsuario} = require("../utils/utils")
+const {
+    validarUsuario
+} = require("../utils/utils")
 const bcrypt = require('bcrypt');
 
 
@@ -148,7 +150,7 @@ router.post("/usuario/", async (req, res) => {
 
         let query = 'INSERT INTO usuario (nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo, punto_de_control_id) values ($1,$2,$3,$4,$5,$6,$7,$8) returning *';
         user = await pool.query(query, [nombre_completo, dni, nombre_usuario, email, tipo_usuario, hashedPassword, activo, punto_de_control_id]);
-        
+
         res.json({
             success: true,
             status: 200,
@@ -270,6 +272,16 @@ router.get('/interdeposito/:id', async (req, res) => {
             throw error;
         }
 
+        if (result.rows[0].estado == "rechazado" || result.rows[0].estado == "aceptado") {
+            return res.json({
+                success: true,
+                result_message: 'Este interdeposito ya ha sido procesado!',
+                result_rows: result.rowCount,
+                result_proceso: 'GET ONE INTERDEPOSITO',
+                result_data: result.rows[0],
+            });
+        }
+
 
         // Envía la respuesta final después de que todas las promesas se resuelvan
         res.json({
@@ -299,7 +311,7 @@ router.get('/interdeposito/', async (req, res) => {
         let result = await pool.query(`
                 SELECT 
                 i.id, 
-                i.email, 
+                i.telefono, 
                 i.insumos, 
                 p_origen.nombre AS origen, 
                 p_destino.nombre AS destino, 
@@ -328,8 +340,7 @@ router.get('/interdeposito/', async (req, res) => {
             });
         }
 
-        // Cambia forEach por map
-        const response = await Promise.all(result.rows.map( async registro => {
+        const response = await Promise.all(result.rows.map(async registro => {
             const insumos = await Promise.all(JSON.parse(registro.insumos).map(async (insumo) => {
                 return insumo.nombre_insumo;
             }));
@@ -363,22 +374,22 @@ router.post("/interdeposito/", async (req, res) => {
     const {
         origen,
         destino,
-        email,
+        telefono,
         usuario_id,
         insumos
     } = req.body;
 
     try {
 
-        if (!origen || !destino || !email || !usuario_id || !insumos || insumos.length === 0 ){
+        if (!origen || !destino || !telefono || !usuario_id || !insumos || insumos.length === 0) {
             const error = new Error("Campos vacios!");
             error.statusCode = 400;
             throw error;
         }
 
-        let query = `INSERT INTO interdeposito (usuario_id, insumos, origen, destino, email)
+        let query = `INSERT INTO interdeposito (usuario_id, insumos, origen, destino, telefono)
             VALUES ($1, $2, $3, $4, $5) returning *;`;
-        interdeposito = await pool.query(query, [usuario_id, JSON.stringify(insumos), origen, destino, email]);
+        interdeposito = await pool.query(query, [usuario_id, JSON.stringify(insumos), origen, destino, telefono]);
 
         res.json({
             success: true,
@@ -444,55 +455,87 @@ router.put('/interdeposito/:id', async (req, res) => {
         id
     } = req.params;
 
-    const {estado, insumos} = req.body;
+    const {
+        estado,
+        insumos,
+        user_id
+    } = req.body;
 
     try {
 
-        if(!estado || estado ==! "rechazado" || estado ==! "aceptado"){
+        if (!estado || estado ==! "rechazado" || estado ==! "aceptado") {
             const error = new Error('El estado no es valido');
             error.statusCode = 400;
             throw error;
         }
-        let query = 'UPDATE interdeposito SET estado = $1 WHERE id= $2';
 
+        // await pool.query('BEGIN');
 
-        const result = await pool.query(query, [estado, id]);
-            
-        if(result.rowCount === 0) {
-            const error = new Error('No se encontró el interdeposito solicitado para actualizar');
+        const queryValidation = "SELECT * FROM usuario u INNER JOIN interdeposito i ON i.destino = u.punto_de_control_id WHERE u.id= $1 AND i.id= $2"
+        const validation = await pool.query(queryValidation, [user_id, id]);
+
+        if (validation.rowCount === 0) {
+            const error = new Error('Su usuario no tiene permitido editar este interdeposito');
             error.statusCode = 404;
             throw error;
         }
 
-        if(estado == "aceptado" && Array.from(insumos).length){
-            
-            let query2 = 'UPDATE insumo SET cantidad = cantidad + $1, interdeposito_id = $2 WHERE id= $3'
+
+        let query = 'UPDATE interdeposito SET estado = $1 WHERE id= $2';
+        const result = await pool.query(query, [estado, id]);
+
+
+        if (estado == "aceptado" && Array.from(insumos).length) {
 
             try {
-                response = await Promise.all(Array.from(insumos).map(async (insumo)=>{
-                    const updatedInsumo = await pool.query(query2, [insumo.cantidad, id, insumo.id]);
-                    
-                    if (updatedInsumo.rowCount === 0) {
-                        const error = new Error(`No se encontró el insumo con id ${insumo.id} para actualizar`);
-                        error.statusCode = 404;
+
+                let query = 'UPDATE insumo SET cantidad = cantidad + $1 WHERE id= $2 AND punto_control_id = $3'
+                response = await Promise.all(Array.from(insumos).map(async (insumo) => {
+                    if(insumo.estado ==! "apto" || insumo.estado ==! "no_apto"){
+                        const error = new Error(`El estado del insumo con id ${insumo.id} no es valido`);
+                        error.statusCode = 400;
                         throw error;
                     }
-                }))
-                
-                res.json({
-                    success: true,
-                    result_message: 'interdeposito y stock actualizados de forma exitosa!',
-                    result_rows: result.rowCount,
-                    result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
-                    result_data: result.rows[0],
-                });
+                    if (insumo.estado == "apto") {
+                        const updatedInsumo = await pool.query(query, [parseInt(insumo.cantidad), insumo.id, validation.rows[0].punto_de_control_id]);
+                        if (updatedInsumo.rowCount === 0) {
+                            const error = new Error(`El insumo con id ${insumo.id} no existe o el punto de control no corresponde con el de tu usuario`);
+                            error.statusCode = 400;
+                            throw error;
+                        }
+                    }
 
-            }
-            catch(error){
+                }))
+            } catch (error) {
                 const err = new Error(error.message);
                 throw err;
             }
-        }else{   
+
+            try {
+                let query = 'INSERT INTO remito (interdeposito_id, insumo_id, cantidad, estado) VALUES ($1, $2, $3, $4);'
+                response = await Promise.all(Array.from(insumos).map(async (insumo) => {
+                    await pool.query(query, [id, insumo.id, insumo.cantidad, insumo.estado]);
+                }))
+
+            } catch (error) {
+                const err = new Error(error.message);
+                throw err;
+            }
+
+            // await pool.query('COMMIT')
+
+            res.json({
+                success: true,
+                result_message: 'interdeposito y stock actualizados de forma exitosa!',
+                result_rows: result.rowCount,
+                result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
+                result_data: result.rows[0],
+            });
+
+
+        } else {
+            // await pool.query('COMMIT')
+
             res.json({
                 success: true,
                 result_message: 'interdeposito actualizado de forma exitosa!',
@@ -503,6 +546,9 @@ router.put('/interdeposito/:id', async (req, res) => {
         }
 
     } catch (error) {
+
+        // await pool.query('ROLLBACK')
+
         res.status(error.statusCode || 500).json({
             success: false,
             status: error.statusCode || 500,
