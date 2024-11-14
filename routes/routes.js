@@ -305,32 +305,34 @@ router.get('/interdeposito/:id', async (req, res) => {
     }
 });
 
-
 router.get('/interdeposito/', async (req, res) => {
     try {
+        const user_id = req.query.user_id;
+
         let result = await pool.query(`
-                SELECT 
-                i.id, 
-                i.telefono, 
-                i.insumos, 
-                p_origen.nombre AS origen, 
-                p_destino.nombre AS destino, 
+            SELECT 
+                i.id,
+                i.usuario_id,
                 i.fecha_creacion,
-                i.estado,
+                i.telefono,
+                i.estado, 
+                p_origen.nombre AS origen, 
+                p_destino.nombre AS destino,
                 u.nombre_usuario
             FROM 
                 interdeposito i
             INNER JOIN 
-                usuario u ON u.id = i.usuario_id
+                usuario u ON u.id = i.usuario_id AND (u.punto_de_control_id = i.origen OR u.punto_de_control_id = i.destino) 
             INNER JOIN 
                 punto_de_control p_origen ON i.origen = p_origen.id
             INNER JOIN 
                 punto_de_control p_destino ON i.destino = p_destino.id
+            WHERE u.id = $1
             ORDER BY 
                 i.id DESC;
-        `);
+        `, [user_id]);
 
-        if (result.rowCount == 0) {
+        if (result.rowCount === 0) {
             return res.json({
                 success: true,
                 result_message: 'Historial vacio!',
@@ -340,25 +342,31 @@ router.get('/interdeposito/', async (req, res) => {
             });
         }
 
-        const response = await Promise.all(result.rows.map(async registro => {
-            const insumos = await Promise.all(JSON.parse(registro.insumos).map(async (insumo) => {
-                return insumo.nombre_insumo;
-            }));
-            registro.insumos = insumos;
-            return registro;
-        }));
+        const response = await Promise.all(
+            result.rows.map(async (registro) => {
+                if (registro.estado === "aceptado") {
+                    let insumos = await pool.query(
+                        `SELECT r.*, i.nombre_insumo FROM remito r INNER JOIN insumo i ON i.id = r.insumo_id WHERE interdeposito_id = $1`,
+                        [registro.id]
+                    );
+                    registro.insumos = insumos.rows;
+                } else {
+                    registro.insumos = [];
+                }
+                return registro;
+            })
+        );
 
-        // Envía la respuesta final después de que todas las promesas se resuelvan
+        // Filtrar cualquier posible `undefined` y enviar solo registros válidos
         res.json({
             success: true,
             result_message: 'Historial obtenido!',
-            result_rows: result.rowCount,
+            result_rows: response.length,
             result_proceso: 'GET HISTORIAL INTERDEPOSITO',
-            result_data: response,
+            result_data: response.filter(Boolean),
         });
-
+        
     } catch (error) {
-        // Maneja el error aquí
         res.status(error.statusCode || 500).json({
             success: false,
             status: error.statusCode || 500,
@@ -465,6 +473,12 @@ router.put('/interdeposito/:id', async (req, res) => {
 
         if (!estado || estado ==! "rechazado" || estado ==! "aceptado") {
             const error = new Error('El estado no es valido');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        if(insumos.length == 0){
+            const error = new Error('Los insumos son obligatorios!');
             error.statusCode = 400;
             throw error;
         }

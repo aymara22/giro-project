@@ -62,11 +62,12 @@
             <tr>
                 <th>ID</th>
                 <th>Telefono</th>
-                <th>Insumos</th>
                 <th>Origen</th>
                 <th>Destino</th>
                 <th>Fecha de Creación</th>
                 <th>Usuario</th>
+                <th>Insumos</th>
+                <th>Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -76,6 +77,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            obtenerHistorial()
             cerrarSesion();
             validarSesion();
         });
@@ -98,47 +100,95 @@
         // Función para obtener los datos del historial
         async function obtenerHistorial() {
             try {
-                const response = await fetch('http://localhost:3000/api-giro/interdeposito/');
+                const user_id = localStorage.getItem("userSession");
+                const response = await fetch(`http://localhost:3000/api-giro/interdeposito/?user_id=${user_id}`);
                 const data = await response.json();
-                console.log(data)
-                // Verificamos si la respuesta fue exitosa
+                console.log(data);
+        
                 if (data.success && data.result_data.length > 0) {
                     const historial = data.result_data;
-                    console.log(historial)
-                    // Obtener el tbody de la tabla
                     const tbody = document.getElementById('historialTable').getElementsByTagName('tbody')[0];
-
-                    // Limpiar la tabla antes de agregar nuevos datos
                     tbody.innerHTML = '';
-
-                    // Iterar sobre los registros y agregarlos a la tabla
-                    historial.forEach(registro => {
+        
+                    historial.forEach((registro, index) => {
+                        // Crear la fila principal del interdeposito
                         const row = tbody.insertRow();
-
-                        // Insertar celdas en cada fila
                         row.insertCell(0).textContent = registro.id;
                         row.insertCell(1).textContent = registro.telefono;
-                        row.insertCell(2).textContent = registro.insumos.join(
-                        ', '); // Mostrar insumos como texto separado por coma
-                        row.insertCell(3).textContent = registro.origen;
-                        row.insertCell(4).textContent = registro.destino;
-                        row.insertCell(5).textContent = registro.fecha_creacion;
-                        row.insertCell(6).textContent = registro.nombre_usuario;
+                        row.insertCell(2).textContent = registro.origen;
+                        row.insertCell(3).textContent = registro.destino;
+                        row.insertCell(4).textContent = new Date(registro.fecha_creacion).toLocaleDateString();
+                        row.insertCell(5).textContent = registro.nombre_usuario;
+                        row.insertCell(6).textContent = registro.estado;
+                        const insumosCell = row.insertCell(7);
+                        if(registro.estado == "pendiente"){
+                            const verInsumosBtn = document.createElement('a');
+                            verInsumosBtn.textContent = 'Gestionar remito';
+                            verInsumosBtn.href = "/admin/interdeposito/remito.html"
+                            insumosCell.appendChild(verInsumosBtn);
+                        }else{
+                            const verInsumosBtn = document.createElement('a');
+                            verInsumosBtn.textContent = 'Ver remito';
+                            verInsumosBtn.href = "#"
+                            verInsumosBtn.onclick = () => toggleInsumos(index);
+                            insumosCell.appendChild(verInsumosBtn);
+                            
+                            // Crear una fila oculta para los insumos
+                            const insumosRow = tbody.insertRow();
+                            insumosRow.style.display = 'none';
+                            insumosRow.setAttribute('id', `insumosRow-${index}`);
+                            const insumosCellFull = insumosRow.insertCell(0);
+                            insumosCellFull.colSpan = 7; // Ocupa todas las columnas
+                            insumosCellFull.innerHTML = generarTablaInsumos(registro.insumos);
+                        }
                     });
                 } else {
-                    // Si no hay registros, dejamos la tabla vacía sin mostrar errores
                     const tbody = document.getElementById('historialTable').getElementsByTagName('tbody')[0];
-                    tbody.innerHTML =
-                        '<tr><td colspan="7" style="text-align:center;">No hay registros disponibles.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay registros disponibles.</td></tr>';
                 }
             } catch (error) {
-                // En caso de error, simplemente no mostramos nada y no generamos alertas
                 console.error('Error al obtener los datos:', error);
             }
         }
+        
+        // Función para generar la tabla de insumos
+        function generarTablaInsumos(insumos) {
+            let insumosHTML = `
+                <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+                    <thead>
+                        <tr style="background-color:#f4f4f4;">
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Cantidad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            insumos.forEach(insumo => {
+                insumosHTML += `
+                    <tr>
+                        <td>${insumo.id}</td>
+                        <td>${insumo.nombre_insumo}</td>
+                        <td>${insumo.cantidad}</td>
+                        <td>${insumo.estado}</td>
+                    </tr>
+                `;
+            });
+            insumosHTML += '</tbody></table>';
+            return insumosHTML;
+        }
+        
+        // Función para mostrar/ocultar la fila de insumos
+        function toggleInsumos(index) {
+            const insumosRow = document.getElementById(`insumosRow-${index}`);
+            if (insumosRow.style.display === 'none') {
+                insumosRow.style.display = 'table-row';
+            } else {
+                insumosRow.style.display = 'none';
+            }
+        }
 
-        // Cargar los datos cuando se cargue la página
-        window.onload = obtenerHistorial;
     </script>
 
 </body>
