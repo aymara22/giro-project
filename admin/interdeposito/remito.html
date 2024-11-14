@@ -132,10 +132,6 @@
             const result = await response.json();
             console.log(result)
             if (result.success == true) {
-                console.log({
-                    "a": result.result_data.estado,
-                    "b": "rechazado"
-                })
                 if (result.result_data.estado === "aceptado" || result.result_data.estado === "rechazado") {
                     Swal.fire({
                         icon: 'warning',

@@ -477,16 +477,10 @@ router.put('/interdeposito/:id', async (req, res) => {
             throw error;
         }
 
-        if(insumos.length == 0){
-            const error = new Error('Los insumos son obligatorios!');
-            error.statusCode = 400;
-            throw error;
-        }
-
         // await pool.query('BEGIN');
 
-        const queryValidation = "SELECT * FROM usuario u INNER JOIN interdeposito i ON i.destino = u.punto_de_control_id WHERE u.id= $1 AND i.id= $2"
-        const validation = await pool.query(queryValidation, [user_id, id]);
+        let queryValidation = "SELECT * FROM usuario u INNER JOIN interdeposito i ON i.destino = u.punto_de_control_id WHERE u.id= $1 AND i.id= $2"
+        let validation = await pool.query(queryValidation, [user_id, id]);
 
         if (validation.rowCount === 0) {
             const error = new Error('Su usuario no tiene permitido editar este interdeposito');
@@ -495,11 +489,23 @@ router.put('/interdeposito/:id', async (req, res) => {
         }
 
 
-        let query = 'UPDATE interdeposito SET estado = $1 WHERE id= $2';
+
+        let query = "UPDATE interdeposito SET estado = $1 WHERE id = $2 AND estado = 'pendiente';";
         const result = await pool.query(query, [estado, id]);
 
+        if (result.rowCount == 0) {
+            const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
+            error.statusCode = 400;
+            throw error;
+        }
 
         if (estado == "aceptado" && Array.from(insumos).length) {
+
+            if(insumos.length == 0){
+                const error = new Error('Los insumos son obligatorios!');
+                error.statusCode = 400;
+                throw error;
+            }
 
             try {
 
