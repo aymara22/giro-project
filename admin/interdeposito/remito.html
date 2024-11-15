@@ -196,10 +196,12 @@
                     insumos = await Promise.all(Array.from(tabla).map(async (insumo) => {
                         const id = insumo.querySelector("td:first-child").textContent;
                         const estado = insumo.querySelector("td:last-child");
+                        const nombre_insumo = insumo.querySelector("td:nth-child(2)").textContent;
                         const cantidad = insumo.querySelector("td:nth-child(3)").textContent;
                         return {
                             id,
                             cantidad,
+                            nombre_insumo,
                             estado: estado.querySelector(("select[name='estado']")).value
                         };
                     }))
@@ -235,7 +237,7 @@
                         text: 'Actualizacion satisfactoria!',
                     }).then(() => {
                         limpiarCampos()
-                        window.location.href = "/historial.html"
+                        window.location.href = "./historial.html"
                     })
                 } else {
                     Swal.fire({
