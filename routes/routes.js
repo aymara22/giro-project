@@ -309,6 +309,18 @@ router.get('/interdeposito/', async (req, res) => {
     try {
         const user_id = req.query.user_id;
 
+        let userResult = await pool.query(`
+            SELECT * FROM usuario WHERE id= $1
+        `, [user_id]);
+
+        if (userResult.rows.length === 0) {
+            const error = new Error("Usuario no encontrado!");
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        let punto_de_control_id = userResult.rows[0].punto_de_control_id;
+
         let result = await pool.query(`
             SELECT 
                 i.id,
@@ -322,15 +334,16 @@ router.get('/interdeposito/', async (req, res) => {
             FROM 
                 interdeposito i
             INNER JOIN 
-                usuario u ON u.id = i.usuario_id AND u.punto_de_control_id = i.destino
+                usuario u ON i.usuario_id = u.id
             INNER JOIN 
                 punto_de_control p_origen ON i.origen = p_origen.id
             INNER JOIN 
                 punto_de_control p_destino ON i.destino = p_destino.id
-            WHERE u.id = $1
+            WHERE 
+                i.destino = $1
             ORDER BY 
                 i.id DESC;
-        `, [user_id]);
+        `, [punto_de_control_id]);
 
         if (result.rowCount === 0) {
             return res.json({
