@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
-    <link rel="stylesheet" href="/style/formularios.css">
+    <link rel="stylesheet" href="/style/formulario3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
@@ -39,66 +39,67 @@
     </nav>
     <br>
     <br>
-
     <h3>REGISTRO DE USUARIO</h3>
-    <div>
-        <!-- ID (oculto) -->
-        <input type="hidden" id="txtIDUSUARIO" name="id_usuario" value="0">
 
-        <!-- Nombre Completo -->
-        <label for="txtNombreCompleto">Nombre Completo:</label>
-        <input type="text" id="txtNombreCompleto" name="nombre_completo" value="" required><br><br>
-
-        <!-- DNI -->
-        <label for="txtDNIUsuario">DNI:</label>
-        <input type="text" id="txtDNIUsuario" name="dni" value="" required><br><br>
-
-        <!-- Nombre de Usuario -->
-        <label for="txtNombreUsuario">Nombre de Usuario:</label>
-        <input type="text" id="txtNombreUsuario" name="nombre_usuario" value="" required><br><br>
-
-        <!-- Email -->
-        <label for="txtEmailUsuario">Email:</label>
-        <input type="email" id="txtEmailUsuario" name="email" value="" required><br><br>
-
-        <!-- Tipo de Rol -->
-        <label for="txtTipoRolUsuario">Tipo de Rol:</label>
-        <select id="txtTipoRolUsuario" name="tipo_rol" required>
-            <option value="" disabled selected>Selecciona una opción</option>
-            <option value="ADMIN">ADMIN</option>
-            <option value="VIEWR">VIEWER</option>
-        </select><br><br>
-
-        <label for="txtPuntoDeControl">Punto De Control:</label>
-        <select id="txtPuntoDeControl" name="punto_de_control" required>
-            <option value="" disabled selected>Selecciona una opción</option>
-            <option value="2">Chacarita</option>
-            <option value="3">Oficina</option>
-            <option value="4">Predio Ferial</option>
-            <option value="5">Valle Chico</option>
-        </select><br><br>
-
-        <!-- Contraseña -->
-        <label for="txtContraseñaUsuario">Contraseña:</label>
-        <input type="password" id="txtContraseñaUsuario" name="password" required><br><br>
-
-        <!-- Habilitado -->
-        <label for="habilitadoUsuario">Activo:</label>
-        <input type="radio" id="habilitadoSi" name="habilitado" value="true" required> Sí
-        <input type="radio" id="habilitadoNo" name="habilitado" value="false" required> No<br><br>
-
-        <!-- Botones -->
-        <input type="submit" value="Registrar" id="btnRegistrarUsuario">
-        <input type="button" value="Cancelar" id="btnCancelarUsuario">
+    <div class="form-container">
+        <form>
+            <!-- ID (oculto) -->
+            <input type="hidden" id="txtIDUSUARIO" name="id_usuario" value="0">
+    
+            <!-- Nombre Completo -->
+            <label for="txtNombreCompleto">Nombre Completo:</label>
+            <input type="text" id="txtNombreCompleto" name="nombre_completo" required>
+    
+            <!-- DNI -->
+            <label for="txtDNIUsuario">DNI:</label>
+            <input type="text" id="txtDNIUsuario" name="dni" required>
+    
+            <!-- Nombre de Usuario -->
+            <label for="txtNombreUsuario">Nombre de Usuario:</label>
+            <input type="text" id="txtNombreUsuario" name="nombre_usuario" required>
+    
+            <!-- Email -->
+            <label for="txtEmailUsuario">Email:</label>
+            <input type="email" id="txtEmailUsuario" name="email" required>
+    
+            <!-- Tipo de Rol -->
+            <label for="txtTipoRolUsuario">Tipo de Rol:</label>
+            <select id="txtTipoRolUsuario" name="tipo_rol" required>
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="VIEWER">VIEWER</option>
+            </select>
+    
+            <!-- Punto de Control -->
+            <label for="txtPuntoDeControl">Punto De Control:</label>
+            <select id="txtPuntoDeControl" name="punto_de_control" required>
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option value="2">Chacarita</option>
+                <option value="3">Oficina</option>
+                <option value="4">Predio Ferial</option>
+                <option value="5">Valle Chico</option>
+            </select>
+    
+            <!-- Contraseña -->
+            <label for="txtContraseñaUsuario">Contraseña:</label>
+            <input type="password" id="txtContraseñaUsuario" name="password" required>
+    
+            <!-- Habilitado -->
+            <label>Activo:</label>
+            <input type="radio" id="habilitadoSi" name="habilitado" value="true" required> Sí
+            <input type="radio" id="habilitadoNo" name="habilitado" value="false" required> No
+    
+            <!-- Botones -->
+            <div class="botones">
+                <input type="submit" value="Registrar" id="btnRegistrarUsuario">
+                <input type="button" value="Cancelar" id="btnCancelarUsuario">
+            </div>
+        </form>
     </div>
+    <br>
+    <br>
+    <br>
 
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
     <footer>
         <div class="footer-content">
             <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
@@ -109,7 +110,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             cerrarSesion()
-            validarSesion()
+          // validarSesion()
             crearUsuario()
         })
 
@@ -121,13 +122,13 @@
             })
           }
       
-        function validarSesion(){
+       /* function validarSesion(){
             let sesion= localStorage.getItem("isLoggedIn")
             let userSession= localStorage.getItem("userSession")
             if(!sesion || !userSession){
               window.location.href = "../auth/login.html"
             }
-          }
+          }*/
 
         function crearUsuario() {
 

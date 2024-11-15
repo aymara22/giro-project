@@ -100,6 +100,34 @@
     </form>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+        // Obtener los selectores
+const origenSelect = document.getElementById("origen");
+const destinoSelect = document.getElementById("destino");
+
+// Función para deshabilitar la opción seleccionada en el origen
+function actualizarDestino() {
+    // Obtener el valor seleccionado en el origen
+    const origenValue = origenSelect.value;
+
+    // Habilitar todas las opciones del destino primero
+    for (let option of destinoSelect.options) {
+        option.disabled = false;
+    }
+
+    // Deshabilitar la opción que coincide con el valor seleccionado en origen
+    if (origenValue) {
+        const destinoOption = destinoSelect.querySelector(`option[value="${origenValue}"]`);
+        if (destinoOption) {
+            destinoOption.disabled = true;
+        }
+    }
+}
+
+// Escuchar cambios en el select de origen
+origenSelect.addEventListener("change", actualizarDestino);
+
+        /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
         // Función para mostrar los campos de insumo
         document.addEventListener("DOMContentLoaded", () => {
             cargarInsumos()

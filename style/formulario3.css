@@ -1,0 +1,86 @@
+
+
+/* Contenedor del formulario centrado */
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Formulario */
+form {
+    border: 2px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+    width: 350px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Título del formulario */
+h3 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Etiquetas y campos de entrada */
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+    border-radius: 5px;
+}
+
+/* Radio buttons */
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+/* Botones alineados */
+.botones {
+    display: flex;
+    justify-content: space-between;
+}
+
+input[type="submit"],
+input[type="button"] {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+/* Estilo de botones */
+input[type="submit"] {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+input[type="button"] {
+    background-color: #f44336;
+    color: #fff;
+}
+
+/* Hover en botones */
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+input[type="button"]:hover {
+    background-color: #d32f2f;
+}
+

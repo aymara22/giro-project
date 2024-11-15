@@ -73,7 +73,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         viewUsers();
         cerrarSesion(); 
-        validarSesion();
+       // validarSesion();
       });
 
       function cerrarSesion(){
@@ -84,13 +84,13 @@
         })
       }
   
-      function validarSesion(){
+      /*function validarSesion(){
         let sesion= localStorage.getItem("isLoggedIn")
         let userSession= localStorage.getItem("userSession")
         if(!sesion || !userSession){
           window.location.href = "../auth/login.html"
         }
-      }
+      }*/
 
     async function viewUsers(){
         
