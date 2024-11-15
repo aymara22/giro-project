@@ -322,7 +322,7 @@ router.get('/interdeposito/', async (req, res) => {
             FROM 
                 interdeposito i
             INNER JOIN 
-                usuario u ON u.id = i.usuario_id AND (u.punto_de_control_id = i.origen OR u.punto_de_control_id = i.destino) 
+                usuario u ON u.id = i.usuario_id AND u.punto_de_control_id = i.destino
             INNER JOIN 
                 punto_de_control p_origen ON i.origen = p_origen.id
             INNER JOIN 
@@ -395,8 +395,38 @@ router.post("/interdeposito/", async (req, res) => {
             throw error;
         }
 
-        let query = `INSERT INTO interdeposito (usuario_id, insumos, origen, destino, telefono)
+        if(origen == destino){
+            const error = new Error(" El origen y destino no pueden ser iguales!");
+            error.statusCode = 400;
+            throw error;
+        }
+
+        cantidadQuery = "SELECT * FROM insumo WHERE id= $1 AND punto_control_id = $2"
+        let query = "UPDATE insumo SET cantidad = cantidad - $1 WHERE id= $2 AND punto_control_id = $3";
+
+
+        await Promise.all(insumos.map(async (insumo)=>{
+
+            let result = await pool.query(cantidadQuery, [insumo.id, origen]);
+
+            if(result.rows[0].cantidad < parseInt(insumo.cantidad)){
+                const error = new Error(`La cantidad del insumo ${insumo.nombre_insumo} excede la disponible!`);
+                error.statusCode = 400;
+                throw error;
+            }else{
+
+                result = await pool.query(query, [parseInt(insumo.cantidad), insumo.id, origen]);
+                if (result.rowCount == 0) {
+                    const error = new Error('No fue posible efectuar la actualizacion');
+                    error.statusCode = 400;
+                    throw error;
+                }
+            }   
+        }))
+
+        query = `INSERT INTO interdeposito (usuario_id, insumos, origen, destino, telefono)
             VALUES ($1, $2, $3, $4, $5) returning *;`;
+
         interdeposito = await pool.query(query, [usuario_id, JSON.stringify(insumos), origen, destino, telefono]);
 
         res.json({
@@ -420,16 +450,55 @@ router.post("/interdeposito/", async (req, res) => {
     }
 })
 
+router.get("/punto_de_control/:id", async (req, res) => {
 
-router.get("/insumo/", async (req, res) => {
-
-    let query = 'select * from insumo';
+    let user_id = req.params.id 
+    let query = 'SELECT p.id, p.nombre AS punto_de_control FROM usuario u INNER JOIN punto_de_control p ON u.punto_de_control_id = p.id WHERE u.id = $1';
 
     let result = '';
 
     try {
 
-        result = await pool.query(query);
+        result = await pool.query(query, [user_id]);
+
+        if (result.rows.length == 0) {
+            const error = new Error("No hay registros por mostrar");
+            error.statusCode = 404;
+            throw error;
+        } else {
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'PUNTO DE CONTROL OBTENIDO',
+                result_rows: result.rowCount,
+                result_proceso: 'GET ONE PUNTO DE CONTROL',
+                result_data: result.rows
+            })
+        }
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET ONE PUNTO DE CONTROL',
+            result_data: []
+        })
+    }
+})
+
+
+router.get("/insumo/", async (req, res) => {
+
+    let user_id = req.query.user_id 
+    let query = 'SELECT i.* FROM usuario u INNER JOIN insumo i ON i.punto_control_id = u.punto_de_control_id WHERE u.id= $1';
+
+    let result = '';
+
+    try {
+
+        result = await pool.query(query, [user_id]);
 
         if (result.rows.length == 0) {
             const error = new Error("No se encontraron insumos por mostrar");
@@ -510,7 +579,9 @@ router.put('/interdeposito/:id', async (req, res) => {
             try {
 
                 let query = 'UPDATE insumo SET cantidad = cantidad + $1 WHERE id= $2 AND punto_control_id = $3'
-                response = await Promise.all(Array.from(insumos).map(async (insumo) => {
+                let queryInsert = 'INSERT INTO insumo (nombre_insumo, punto_control_id, cantidad) VALUES ($1, $2, $3) RETURNING *';
+                
+                await Promise.all(Array.from(insumos).map(async (insumo) => {
                     if(insumo.estado ==! "apto" || insumo.estado ==! "no_apto"){
                         const error = new Error(`El estado del insumo con id ${insumo.id} no es valido`);
                         error.statusCode = 400;
@@ -519,9 +590,17 @@ router.put('/interdeposito/:id', async (req, res) => {
                     if (insumo.estado == "apto") {
                         const updatedInsumo = await pool.query(query, [parseInt(insumo.cantidad), insumo.id, validation.rows[0].punto_de_control_id]);
                         if (updatedInsumo.rowCount === 0) {
-                            const error = new Error(`El insumo con id ${insumo.id} no existe o el punto de control no corresponde con el de tu usuario`);
-                            error.statusCode = 400;
-                            throw error;
+                            const newProduct = await pool.query(queryInsert, [
+                                insumo.nombre_insumo,
+                                validation.rows[0].punto_de_control_id,
+                                parseInt(insumo.cantidad)
+                            ]);
+
+                            if(newProduct.rowCount == 0){
+                                const error = new Error(`No fue posible crear el producto ${insumo.nombre_insumo}`);
+                                error.statusCode = 400;
+                                throw error;
+                            }
                         }
                     }
 
@@ -533,7 +612,7 @@ router.put('/interdeposito/:id', async (req, res) => {
 
             try {
                 let query = 'INSERT INTO remito (interdeposito_id, insumo_id, cantidad, estado) VALUES ($1, $2, $3, $4);'
-                response = await Promise.all(Array.from(insumos).map(async (insumo) => {
+                await Promise.all(Array.from(insumos).map(async (insumo) => {
                     await pool.query(query, [id, insumo.id, insumo.cantidad, insumo.estado]);
                 }))
 

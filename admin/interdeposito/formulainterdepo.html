@@ -22,6 +22,9 @@
             <h1>PUNTO GIRO</h1>
             <h2>CONTROL DE STOCK</h2>
         </div>
+        <div>
+            <button type="button" class="logOut">cerrar sesion</button>
+          </div>
     </header>
     <nav>
         <ul>
@@ -41,11 +44,6 @@
         <!-- Origen -->
         <label for="origen">Origen:</label>
         <select id="origen" name="origen" required>
-            <option value="" disabled selected>Selecciona una opción</option>
-            <option value="2">Chacarita</option>
-            <option value="3">Oficina</option>
-            <option value="4">Predio Ferial</option>
-            <option value="5">Valle Chico</option>
         </select>
 
         <!-- Destino -->
@@ -103,8 +101,9 @@
         // Función para mostrar los campos de insumo
         document.addEventListener("DOMContentLoaded", () => {
             cargarInsumos()
-            cerrarSesion();
             validarSesion();
+            cargarPuntoDeControl();
+            cerrarSesion();
         })
 
         function cerrarSesion() {
@@ -123,6 +122,24 @@
             }
         }
 
+        async function cargarPuntoDeControl(){
+            try {
+                const user_id = localStorage.getItem("userSession")
+                const response = await fetch(`http://localhost:3000/api-giro/punto_de_control/${user_id}`);
+
+                const punto_de_control = await response.json();
+
+                // Asumiendo que `insumos` es una lista de objetos con una propiedad "nombre" o similar
+                const origenSelect = document.getElementById('origen');
+                const option= document.createElement("option")
+                option.value = punto_de_control.result_data[0].id;
+                option.textContent = punto_de_control.result_data[0].punto_de_control;
+                origenSelect.appendChild(option)
+
+            } catch (error) {
+                console.error('Error al cargar punto de control:', error);
+            }
+        }
         async function guardarInterdeposito() {
             try {
                 const origen = document.getElementById("origen").value
@@ -130,31 +147,7 @@
                 const telefono = document.getElementById("telefono").value
                 const usuario_id = localStorage.getItem("userSession")
                 const trs = document.getElementById('insumosTable').querySelector('tbody').querySelectorAll('tr')
-                if (origen == "" || destino == "") {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Campos incompletos',
-                        text: 'Origen o destino sin diligenciar',
-                    });
-                } else if (origen == destino) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error de selección',
-                        text: 'El origen y destino no pueden ser iguales',
-                    });
-                } else if (telefono == "") {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Campo vacío',
-                        text: 'El campo telefono está vacío',
-                    });
-                } else if (Array.from(trs).length == 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Sin insumos!',
-                        text: 'Aun no has agregado los insumos',
-                    });
-                }
+
                 insumos = Array.from(trs).map((insumo) => {
                     return {
                         id: insumo.children[0].textContent,
@@ -201,8 +194,9 @@
 
         async function cargarInsumos() {
             try {
+                const user_id = localStorage.getItem("userSession")
                 const response = await fetch(
-                    'http://localhost:3000/api-giro/insumo/'); // Reemplaza con la URL de tu endpoint
+                    `http://localhost:3000/api-giro/insumo/?user_id=${user_id}`); // Reemplaza con la URL de tu endpoint
                 const insumos = await response.json();
 
                 // Asumiendo que `insumos` es una lista de objetos con una propiedad "nombre" o similar
