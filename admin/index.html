@@ -38,13 +38,6 @@
             </div>
     
             <div class="image-box">
-                <h3>USUARIOS</h3>
-                <a href="/admin/usuarios/usuarioadmin.html">
-                    <img src="/img/usuariogiro.jpeg" alt="Interfaz 2">
-                </a>
-            </div>
-    
-            <div class="image-box">
                 <h3>MOVIMIENTOS</h3>
                 <a href="/admin/movimientos/movimiento.html">
                     <img src="/img/movimientogiro.jpeg" alt="Interfaz 3">
@@ -68,25 +61,27 @@
         </footer>
   </body>
 </html>
+<script src="./js/index.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        cerrarSesion();
-        validarSesion();
-      });
-    
-      function cerrarSesion() {
-        let cerrarSesion = document.querySelector(".logOut")
-        cerrarSesion.addEventListener("click", function () {
-          localStorage.clear()
-          window.location.href = "../auth/login.html"
-        })
-      }
-    
-      function validarSesion() {
-        let sesion = localStorage.getItem("isLoggedIn")
-        let userSession = localStorage.getItem("userSession")
-        if (!sesion || !userSession) {
-          window.location.href = "../auth/login.html"
+        mostrarModuloDeUsuarios();
+    });
+
+    function mostrarModuloDeUsuarios(){
+        let profile = localStorage.getItem("userProfile")
+        if (profile == 'ADMIN') {
+            let container = document.querySelector(".container")
+            let moduloUsuarios = document.createElement("div")
+            moduloUsuarios.className = "image-box"  
+            moduloUsuarios.innerHTML = 
+            `
+                <h3>USUARIOS</h3>
+                <a href="/admin/usuarios/usuarioadmin.html">
+                    <img src="/img/usuariogiro.jpeg" alt="Interfaz 2">
+                </a>
+            `
+            container.appendChild(moduloUsuarios)
         }
-      }
+    }
+</script>
 </script>

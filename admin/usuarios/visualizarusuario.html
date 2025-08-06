@@ -54,29 +54,14 @@
             </div>
         </footer>
 </body>
+<script src="../js/index.js"></script>
+<script src="js/usuarios.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         viewUser();
         removeUserId();
-        cerrarSesion();
-        validarSesion();
     });
 
-    function cerrarSesion() {
-        let cerrarSesion = document.querySelector(".logOut")
-        cerrarSesion.addEventListener("click", function () {
-            localStorage.clear()
-            window.location.href = "../auth/login.html"
-        })
-    }
-
-    function validarSesion() {
-        let sesion = localStorage.getItem("isLoggedIn")
-        let userSession = localStorage.getItem("userSession")
-        if (!sesion || !userSession) {
-            window.location.href = "../auth/login.html"
-        }
-    }
 
     function removeUserId() {
         const btnVolver = document.querySelector(".volver");
@@ -94,8 +79,8 @@
         let userForm = document.querySelector(".visualizarUsuarioForm")
         try {
             const id = localStorage.getItem("usuarioId")
-            console.log(id)
-            const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}`, {
+            const user_id = localStorage.getItem("userSession")
+            const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}/?user_id=${user_id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'

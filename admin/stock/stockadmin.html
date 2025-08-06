@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="styles/stock.css">
     <link rel="stylesheet" href="/style/indexadmin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/style/tablas.css">
@@ -75,7 +76,7 @@
   <br>
 
   <div class="enlace-container">
-    <a href="crearnuevopunto.html" class="registro-enlace">Crear Nuevo Punto Giro</a>
+    <a href="/admin/stock/crearnuevopunto.html" class="registro-enlace">Crear Nuevo Punto Giro</a>
 </div>
   <footer>
     <div class="footer-content">
@@ -83,27 +84,7 @@
        <!-- <p>Diseñado por [Tu Nombre]</p> -->
     </div>
 </footer>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      cerrarSesion();
-      validarSesion();
-    });
-  
-    function cerrarSesion() {
-      let cerrarSesion = document.querySelector(".logOut")
-      cerrarSesion.addEventListener("click", function () {
-        localStorage.clear()
-        window.location.href = "../auth/login.html"
-      })
-    }
-  
-    function validarSesion() {
-      let sesion = localStorage.getItem("isLoggedIn")
-      let userSession = localStorage.getItem("userSession")
-      if (!sesion || !userSession) {
-        window.location.href = "../auth/login.html"
-      }
-    }
-  </script>
+<script src="../js/index.js"></script>
+
   </body>
 </html>

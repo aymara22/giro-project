@@ -8,54 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style/index.css">
     <link rel="stylesheet" href="/style/formularios.css">
+    <link rel="stylesheet" href="styles/stock.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        /* Estilo general del formulario */
-        form {
-            max-width: 400px;
-            margin: auto;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-        }
-
-        /* Botones alineados y con colores */
-        .button-container {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-
-        button[type="submit"] {
-            background-color: green;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            width: 48%;
-        }
-
-        button[type="reset"] {
-            background-color: red;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            width: 48%;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-    </style>
 
   </head>
 
@@ -133,27 +87,6 @@
        <!-- <p>Diseñado por [Tu Nombre]</p> -->
     </div>
 </footer>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        cerrarSesion();
-        validarSesion();
-      });
-    
-      function cerrarSesion() {
-        let cerrarSesion = document.querySelector(".logOut")
-        cerrarSesion.addEventListener("click", function () {
-          localStorage.clear()
-          window.location.href = "../auth/login.html"
-        })
-      }
-    
-      function validarSesion() {
-        let sesion = localStorage.getItem("isLoggedIn")
-        let userSession = localStorage.getItem("userSession")
-        if (!sesion || !userSession) {
-          window.location.href = "../auth/login.html"
-        }
-      }
-</script>
+<script src="../js/index.js"></script>
   </body>
 </html>

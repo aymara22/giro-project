@@ -54,29 +54,13 @@
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../js/index.js"></script>
+<script src="js/usuarios.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     viewUser();
     cleanLocalStoraged();
-    cerrarSesion();
-    validarSesion();
   });
-
-  function cerrarSesion() {
-    let cerrarSesion = document.querySelector(".logOut")
-    cerrarSesion.addEventListener("click", function () {
-      localStorage.clear()
-      window.location.href = "../auth/login.html"
-    })
-  }
-
-  function validarSesion() {
-    let sesion = localStorage.getItem("isLoggedIn")
-    let userSession = localStorage.getItem("userSession")
-    if (!sesion || !userSession) {
-      window.location.href = "../auth/login.html"
-    }
-  }
 
   async function editUserData() {
     const btnEditar = await document.querySelector(".btn-registrar")
@@ -122,7 +106,8 @@
 
       // Si el usuario confirma, proceder a eliminar
       if (result.isConfirmed) {
-        const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}`, {
+        const user_id = localStorage.getItem("userSession")
+        const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}/?user_id=${user_id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'

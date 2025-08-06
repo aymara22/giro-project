@@ -8,24 +8,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="styles/stock.css">
     <link rel="stylesheet" href="/style/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="/style/indexadmin.css">
     <link rel="stylesheet" href="/style/puntostablas.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles/stock.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        #map {
-            width: 200px;
-            /* Mapa ocupa el 100% del ancho del contenedor */
-            height: 200px;
-            position: absolute;
-            bottom: 0px;
-            left: 50px;
-            /* Ajuste de altura para hacerlo más visible */
-            /* Ajuste de altura para hacerlo más visible */
-        }
-    </style>
 </head>
 
 <body>
@@ -59,54 +49,7 @@
 
     <!-- Aquí estará el mapa -->
 
-
-    <table id="tablaProductos">
-        <tr>
-            <th colspan="4">CESTOS DE PLÁSTICOS</th>
-        </tr>
-        <tr>
-            <th>Producto</th>
-            <th>Descripcion</th>
-            <th>Cantidad</th>
-            <th>Acciones <span class="add-row-icon" onclick="agregarFila()">&#43;</span></th>
-        </tr>
-        <tr>
-            <td>Cestos 10</td>
-            <td></td>
-            <td>50</td>
-            <td class="actions">
-                <img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"
-                    onclick="eliminarFila(this)">
-                <img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar">
-            </td>
-        </tr>
-    </table>
-    <br><br>
-
-    <table id="tablaProductos">
-        <tr>
-            <th colspan="4">COLILLEROS</th>
-        </tr>
-        <tr>
-            <th>Producto</th>
-            <th>Descripcion</th>
-            <th>Cantidad</th>
-            <th>Acciones <span class="add-row-icon" onclick="agregarFila()">&#43;</span></th>
-        </tr>
-        <tr>
-            <td>Amarillos Grandes</td>
-            <td></td>
-            <td>15</td>
-            <td class="actions">
-                <img src="https://img.icons8.com/material-outlined/24/000000/trash--v1.png" alt="Eliminar"
-                    onclick="eliminarFila(this)">
-                <img src="https://img.icons8.com/material-outlined/24/000000/edit--v1.png" alt="Modificar">
-            </td>
-        </tr>
-    </table>
-
-    <br>
-    <br>
+    <div id="tablas"></div>
 
     <div class="enlace-container">
         <a href="registrarusuario.html" class="registro-enlace">Crear Nueva Tabla de Insumos</a>
@@ -122,44 +65,28 @@
             <p>&copy; 2024 Punto Giro. Todos los derechos reservados.</p>
         </div>
     </footer>
-
+    <script src="js/stock.js"></script>
+    <script src="../js/index.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            cerrarSesion();
-            validarSesion();
-          });
-        
-          function cerrarSesion() {
-            let cerrarSesion = document.querySelector(".logOut")
-            cerrarSesion.addEventListener("click", function () {
-              localStorage.clear()
-              window.location.href = "../auth/login.html"
-            })
-          }
-        
-          function validarSesion() {
-            let sesion = localStorage.getItem("isLoggedIn")
-            let userSession = localStorage.getItem("userSession")
-            if (!sesion || !userSession) {
-              window.location.href = "../auth/login.html"
-            }
-          }
-        // Coordenadas del punto de "Chacarita"
-        const lat = -28.45957546231465 // Ejemplo de latitud
-        const lon = -65.75319566245481 // Ejemplo de longitud
+            obtenerInsumos('Chacarita');
+            const lat = -28.45957546231465 // Ejemplo de latitud
+            const lon = -65.75319566245481 // Ejemplo de longitud
+    
+            // Inicializar el mapa y centrarlo en Chacarita
+            const map = L.map('map').setView([lat, lon], 14); // Nivel de zoom 14 para una vista detallada
+    
+            // Añadir el "tile layer" (mapa base)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+    
+            // Añadir un marcador en las coordenadas de Chacarita
+            L.marker([lat, lon]).addTo(map)
+                .bindPopup("Punto Giro Chacarita")
+                .openPopup();
+        });
 
-        // Inicializar el mapa y centrarlo en Chacarita
-        const map = L.map('map').setView([lat, lon], 14); // Nivel de zoom 14 para una vista detallada
-
-        // Añadir el "tile layer" (mapa base)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Añadir un marcador en las coordenadas de Chacarita
-        L.marker([lat, lon]).addTo(map)
-            .bindPopup("Punto Giro Chacarita")
-            .openPopup();
     </script>
 
 </body>

@@ -66,7 +66,7 @@
         <select id="txtTipoRolUsuario" name="tipo_rol" required>
             <option value="" disabled selected>Selecciona una opción</option>
             <option value="ADMIN">ADMIN</option>
-            <option value="VIEWR">VIEWER</option>
+            <option value="VIEWER">VIEWER</option>
         </select><br><br>
 
         <label for="txtPuntoDeControl">Punto De Control:</label>
@@ -106,28 +106,12 @@
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/index.js"></script>
+    <script src="js/usuarios.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            cerrarSesion()
-            validarSesion()
             crearUsuario()
         })
-
-        function cerrarSesion(){
-            let cerrarSesion= document.querySelector(".logOut")
-            cerrarSesion.addEventListener("click",function(){
-                localStorage.clear()
-                window.location.href = "../auth/login.html"
-            })
-          }
-      
-        function validarSesion(){
-            let sesion= localStorage.getItem("isLoggedIn")
-            let userSession= localStorage.getItem("userSession")
-            if(!sesion || !userSession){
-              window.location.href = "../auth/login.html"
-            }
-          }
 
         function crearUsuario() {
 
@@ -159,8 +143,8 @@
 
 
                 try {
-
-                    const response = await fetch('http://localhost:3000/api-giro/usuario/', {
+                    const user_id = localStorage.getItem("userSession")
+                    const response = await fetch(`http://localhost:3000/api-giro/usuario/?user_id=${user_id}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

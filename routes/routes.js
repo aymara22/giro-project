@@ -5,6 +5,7 @@ const {
     validarUsuario
 } = require("../utils/utils")
 const bcrypt = require('bcrypt');
+const { response } = require("express");
 
 
 router.post("/login", async (req, res) => {
@@ -58,9 +59,31 @@ router.post("/login", async (req, res) => {
 
 router.get("/usuario/:id", async (req, res) => {
     const id = req.params.id;
+    const user_id = req.query.user_id
 
-    let query = 'select u.*, pdc.nombre AS punto_de_control from usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id where u.id = $1 ';
     try {
+        if(!id || !user_id){
+            const error = new Error("Campos vacios");
+            error.statusCode = 404;
+            throw error;
+        }
+    
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario administrador no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error("No tienes permiso para acceder a esta informacion");
+            error.statusCode = 403;
+            throw error;
+        }
+        
+        query = 'select u.*, pdc.nombre AS punto_de_control from usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id where u.id = $1 ';
+
         let usuario = await pool.query(query, [id]);
 
         if (usuario.rows.length < 1) {
@@ -91,12 +114,32 @@ router.get("/usuario/:id", async (req, res) => {
     }
 });
 
-router.get("/usuario/", async (req, res) => {
-
-    let SQL = 'SELECT u.id, u.nombre_completo, u.nombre_usuario, u.tipo_usuario, pdc.nombre AS punto_de_control FROM usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id ';
-
+router.get("/usuario", async (req, res) => {
     try {
-        users = await pool.query(SQL);
+        const user_id = req.query.user_id
+
+        if(!user_id){
+            const error = new Error("Campos vacios");
+            error.statusCode = 404;
+            throw error;
+        }
+    
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario administrador no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error("No tienes permiso para acceder a esta informacion");
+            error.statusCode = 403;
+            throw error;
+        }
+    
+        let SQL = 'SELECT u.id, u.nombre_completo, u.nombre_usuario, u.tipo_usuario, pdc.nombre AS punto_de_control FROM usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id ';
+        let users = await pool.query(SQL);
 
         if (users.rows.length == 0) {
             const error = new Error("No se encontraron usuarios por mostrar");
@@ -137,9 +180,33 @@ router.post("/usuario/", async (req, res) => {
         activo,
         punto_de_control_id
     } = req.body;
-    const validacion = validarUsuario(req.body)
 
     try {
+
+        const user_id = req.query.user_id
+
+        if(!user_id){
+            const error = new Error("El user_id es requerido");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario administrador no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error("Su perfil no posee los permisos para crear un usuario");
+            error.statusCode = 403;
+            throw error;
+        }
+
+        const validacion = validarUsuario(req.body)
+
         if (validacion.success === false) {
             const error = new Error(validacion.error);
             error.statusCode = 400;
@@ -148,7 +215,7 @@ router.post("/usuario/", async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        let query = 'INSERT INTO usuario (nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo, punto_de_control_id) values ($1,$2,$3,$4,$5,$6,$7,$8) returning *';
+        query = 'INSERT INTO usuario (nombre_completo ,dni ,nombre_usuario ,email , tipo_usuario ,password , activo, punto_de_control_id) values ($1,$2,$3,$4,$5,$6,$7,$8) returning *';
         user = await pool.query(query, [nombre_completo, dni, nombre_usuario, email, tipo_usuario, hashedPassword, activo, punto_de_control_id]);
 
         res.json({
@@ -177,24 +244,45 @@ router.put('/usuario/:id', async (req, res) => {
         id
     } = req.params;
     const campos = req.body;
-
-    let query = 'UPDATE usuario SET ';
-    const valores = [];
-    let contador = 1;
-
-    for (const campo in campos) {
-        if (campos[campo] !== undefined) {
-            query += `${campo} = $${contador}, `;
-            valores.push(campos[campo]);
-            contador++;
-        }
-    }
-
-    query = query.slice(0, -2); // Remueve la última coma
-    query += ` WHERE id = $${contador} RETURNING *`;
-    valores.push(id);
+    const user_id = req.query.user_id
 
     try {
+        if(!id || !user_id){
+            const error = new Error("Campos vacios");
+            error.statusCode = 404;
+            throw error;
+        }
+    
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario administrador no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error("No tienes permiso para actualizar un usuario");
+            error.statusCode = 403;
+            throw error;
+        }
+    
+        query = 'UPDATE usuario SET ';
+        const valores = [];
+        let contador = 1;
+    
+        for (const campo in campos) {
+            if (campos[campo] !== undefined) {
+                query += `${campo} = $${contador}, `;
+                valores.push(campos[campo]);
+                contador++;
+            }
+        }
+    
+        query = query.slice(0, -2); // Remueve la última coma
+        query += ` WHERE id = $${contador} RETURNING *`;
+        valores.push(id);
+        
         const result = await pool.query(query, valores);
 
         if (result.rowCount === 0) {
@@ -227,8 +315,29 @@ router.delete('/usuario/:id', async (req, res) => {
     const {
         id
     } = req.params;
+    const user_id = req.query.user_id
 
     try {
+
+        if(!id || !user_id){
+            const error = new Error("Campos vacios");
+            error.statusCode = 404;
+            throw error;
+        }
+    
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario administrador no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error("No tienes permiso para eliminar un usuario");
+            error.statusCode = 403;
+            throw error;
+        }
         // Ejecutamos la consulta DELETE en PostgreSQL
         const result = await pool.query('DELETE FROM usuario WHERE id = $1 RETURNING *', [id]);
 
@@ -504,27 +613,44 @@ router.get("/punto_de_control/:id", async (req, res) => {
 
 router.get("/insumo/", async (req, res) => {
 
-    let user_id = req.query.user_id 
-    let query = 'SELECT i.* FROM usuario u INNER JOIN insumo i ON i.punto_control_id = u.punto_de_control_id WHERE u.id= $1';
+    let punto_control = req.query.punto_control
+    let query = `SELECT i.*, c.nombre AS nombre_categoria 
+                FROM insumo i 
+                INNER JOIN categoria c 
+                ON i.categoria_id = c.id 
+                INNER JOIN punto_de_control p
+                ON p.id = i.punto_control_id
+                WHERE p.nombre = $1`;
 
     let result = '';
 
     try {
 
-        result = await pool.query(query, [user_id]);
+        result = await pool.query(query, [punto_control]);
 
         if (result.rows.length == 0) {
             const error = new Error("No se encontraron insumos por mostrar");
             error.statusCode = 404;
             throw error;
         } else {
-            res.json({
+            let response= {}
+            result.rows.forEach( i => {
+                let categoria = i.nombre_categoria 
+                if( categoria in response ){
+                    delete i.nombre_categoria
+                    response[categoria].push(i) 
+                }else{
+                    delete i.nombre_categoria
+                    response[categoria] = [i]
+                }
+            });
+            res.json({ 
                 success: true,
                 status: 200,
                 result_message: 'LISTA DE INSUMOS OBTENIDA',
                 result_rows: result.rowCount,
                 result_proceso: 'GET ALL INSUMOS',
-                result_data: result.rows
+                result_data: response
             })
         }
 
@@ -536,6 +662,257 @@ router.get("/insumo/", async (req, res) => {
             result_rows: 0,
             result_proceso: 'GET ALL INSUMOS',
             result_data: []
+        })
+    }
+})
+
+router.post("/insumo/", async (req, res) => {
+    const {
+        categoria_id,
+        nombre_insumo,
+        punto_control_id,
+        descripcion,
+        cantidad,
+        user_id
+    } = req.body;
+
+    try {
+
+        if (!categoria_id || !nombre_insumo || !punto_control_id || !descripcion || !cantidad || !user_id) {
+            const error = new Error("Campos vacios!");
+            error.statusCode = 400;
+            throw error;
+        }   
+        
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error(`No tienes permiso para guardar el insumo "${nombre_insumo}"`);
+            error.statusCode = 403;
+            throw error;
+        }
+
+        let insumo = ''
+        try{
+            let query = "INSERT INTO insumo (categoria_id, nombre_insumo, punto_control_id, descripcion, cantidad) VALUES ($1, $2, $3, $4, $5) "
+            insumo = await pool.query(query, [categoria_id, nombre_insumo, punto_control_id, descripcion, cantidad]);
+        }catch(e){
+            const error = new Error(`Ha ocurrido un error al intentar guardar el insumo ${nombre_insumo}. ${e.message}`);
+            error.statusCode = 400;
+            throw error
+        }
+
+
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'Insumo guardado de forma exitosa!',
+            result_rows: insumo.rowCount,
+            result_proceso: 'POST INSUMO',
+            result_data: insumo.rows[0]
+        })
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'POST INSUMO',
+            result_data: ''
+        })
+    }
+})
+
+router.put("/insumo/:id", async (req, res) => {
+    const {id} = req.params
+    const {
+        nombre_insumo,
+        descripcion,
+        cantidad,
+        user_id
+    } = req.body;
+
+    try {
+
+        if (!id || !nombre_insumo || !descripcion || !cantidad || !user_id) {
+            const error = new Error("Campos vacios!");
+            error.statusCode = 400;
+            throw error;
+        }
+        
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error(`No tienes permiso para guardar el insumo "${nombre_insumo}"`);
+            error.statusCode = 403;
+            throw error;
+        }
+
+        let insumo = ''
+
+        try{
+            let query = `UPDATE insumo
+            SET nombre_insumo=?, descripcion=?, cantidad=?
+            WHERE id=?;`
+            insumo = await pool.query(query, [nombre_insumo, descripcion, cantidad, id]);
+        }catch(e){
+            const error = new Error(`Ha ocurrido un error al intentar actualizar el insumo con id ${id}. ${e.message}`);
+            error.statusCode = 400;
+            throw error
+        }
+
+
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'Insumo actualizado de forma exitosa!',
+            result_rows: insumo.rowCount,
+            result_proceso: 'PUT INSUMO',
+            result_data: insumo.rows[0]
+        })
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'PUT INSUMO',
+            result_data: ''
+        })
+    }
+})
+
+router.delete("/insumo/:id", async (req, res) => {
+    const {id} = req.params
+    const {user_id} = req.body
+
+    try {
+
+        if (!id || !user_id) {
+            const error = new Error("Campos vacios!");
+            error.statusCode = 400;
+            throw error;
+        } 
+        
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error(`No tienes permiso para guardar el insumo "${nombre_insumo}"`);
+            error.statusCode = 403;
+            throw error;
+        }
+
+        let insumo = ''
+        try{
+            let query = `DELETE insumo WHERE id=?;`
+            insumo = await pool.query(query, [id]);
+        }catch(e){
+            const error = new Error(`Ha ocurrido un error al intentar eliminar el insumo con id ${id}. ${e.message}`);
+            error.statusCode = 400;
+            throw error
+        }
+
+
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'Insumo eliminado de forma exitosa!',
+            result_rows: insumo.rowCount,
+            result_proceso: 'DELETE INSUMO',
+            result_data: insumo.rows[0]
+        })
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'DELETE INSUMO',
+            result_data: ''
+        })
+    }
+})
+
+router.post("/categoria/", async (req, res) => {
+    const {
+        nombre,
+        descripcion,
+        estado,
+        user_id
+    } = req.body;
+
+    try {
+
+        if (!nombre || !descripcion || !estado) {
+            const error = new Error("Campos vacios!");
+            error.statusCode = 400;
+            throw error;
+        }   
+
+        let query = "SELECT * FROM usuario WHERE id= $1"
+        let user = await pool.query(query, [user_id]);
+        if (!user || user.rows.length === 0) {
+            const error = new Error("Usuario no encontrado");
+            error.statusCode = 404;
+            throw error;
+        }
+           
+        if (user.rows[0].tipo_usuario === "VIEWER") {
+            const error = new Error(`No tienes permiso para guardar la categoria "${nombre}"`);
+            error.statusCode = 403;
+            throw error;
+        }
+
+        let categoria= ''
+        try{
+            let query = "INSERT INTO categoria (nombre, descripcion, estado) VALUES ($1, $2, $3)"
+            categoria = await pool.query(query, [nombre, descripcion, estado]);
+        }catch(e){
+            const error = new Error(`Ha ocurrido un error al intentar guardar la categoria "${nombre}". ${e.message}`);
+            error.statusCode = 400;
+            throw error
+        }
+
+
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'categoria guardado de forma exitosa!',
+            result_rows: categoria.rowCount,
+            result_proceso: 'POST CATEGORIA',
+            result_data: categoria.rows[0]
+        })
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'POST CATEGORIA',
+            result_data: ''
         })
     }
 })

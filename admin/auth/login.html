@@ -94,6 +94,7 @@
                     ).then(() => {
                         localStorage.setItem('isLoggedIn', 'true');
                         localStorage.setItem('userSession', result.result_data.id);
+                        localStorage.setItem('userProfile', result.result_data.tipo_usuario);
                         window.location.href= "../index.html";
                     });
 

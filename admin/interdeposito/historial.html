@@ -77,29 +77,12 @@
             <!-- Los registros se insertarán aquí mediante JavaScript -->
         </tbody>
     </table>
-
+    <script src="../js/index.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             obtenerHistorial()
-            cerrarSesion();
-            validarSesion();
         });
 
-        function cerrarSesion() {
-            let cerrarSesion = document.querySelector(".logOut")
-            cerrarSesion.addEventListener("click", function () {
-                localStorage.clear()
-                window.location.href = "../auth/login.html"
-            })
-        }
-
-        function validarSesion() {
-            let sesion = localStorage.getItem("isLoggedIn")
-            let userSession = localStorage.getItem("userSession")
-            if (!sesion || !userSession) {
-                window.location.href = "../auth/login.html"
-            }
-        }
         // Función para obtener los datos del historial
         async function obtenerHistorial() {
             try {
