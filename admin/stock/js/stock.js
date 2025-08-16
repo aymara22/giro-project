@@ -29,94 +29,6 @@ async function obtenerInsumos(punto) {
     }
 }
 
-// function crearTablaCategoria(container, insumos, titulo) {
-//     // Crear tabla principal
-//     const tabla = document.createElement("table");
-//     tabla.className = "tabla-insumos";
-    
-//     // Crear encabezado de la tabla
-//     const thead = document.createElement("thead");
-    
-//     // Título de la tabla
-//     const tituloRow = document.createElement("tr");
-//     const tituloCell = document.createElement("th");
-//     tituloCell.colSpan = 5; // Abarca todas las columnas
-//     tituloCell.textContent = titulo;
-//     tituloCell.className = "titulo-tabla";
-//     tituloRow.appendChild(tituloCell);
-//     thead.appendChild(tituloRow);
-    
-//     // Fila de encabezados
-//     const headerRow = document.createElement("tr");
-//     const headers = ["Producto", "Descripción", "Cantidad", "Acciones", "+"];
-    
-//     headers.forEach(headerText => {
-//         const th = document.createElement("th");
-//         th.textContent = headerText;
-//         th.className = "header-cell";
-//         headerRow.appendChild(th);
-//     });
-    
-//     thead.appendChild(headerRow);
-//     tabla.appendChild(thead);
-    
-//     // Crear cuerpo de la tabla
-//     const tbody = document.createElement("tbody");
-    
-//     insumos.forEach(insumo => {
-//         const fila = document.createElement("tr");
-//         fila.className = "fila-insumo";
-        
-//         // Columna Producto
-//         const celdaProducto = document.createElement("td");
-//         celdaProducto.textContent = insumo.nombre_insumo;
-//         celdaProducto.className = "celda-producto";
-//         fila.appendChild(celdaProducto);
-        
-//         // Columna Descripción
-//         const celdaDescripcion = document.createElement("td");
-//         celdaDescripcion.textContent = insumo.descripcion;
-//         celdaDescripcion.className = "celda-descripcion";
-//         fila.appendChild(celdaDescripcion);
-        
-//         // Columna Cantidad
-//         const celdaCantidad = document.createElement("td");
-//         celdaCantidad.textContent = insumo.cantidad;
-//         celdaCantidad.className = "celda-cantidad";
-//         fila.appendChild(celdaCantidad);
-        
-//         // Columna Acciones
-//         const celdaAcciones = document.createElement("td");
-//         celdaAcciones.className = "celda-acciones";
-        
-//         // Crear iconos de acción
-//         const iconoEliminar = document.createElement("i");
-//         iconoEliminar.className = "fas fa-trash";
-//         iconoEliminar.style.cursor = "pointer";
-//         iconoEliminar.style.marginRight = "10px";
-//         iconoEliminar.title = "Eliminar";
-//         iconoEliminar.dataset.id = insumo.id; // Guardar el ID para futuras acciones
-        
-//         const iconoEditar = document.createElement("i");
-//         iconoEditar.className = "fas fa-edit";
-//         iconoEditar.style.cursor = "pointer";
-//         iconoEditar.title = "Editar";
-//         iconoEditar.dataset.id = insumo.id; // Guardar el ID para futuras acciones
-        
-//         celdaAcciones.appendChild(iconoEliminar);
-//         celdaAcciones.appendChild(iconoEditar);
-//         fila.appendChild(celdaAcciones);
-        
-//         tbody.appendChild(fila);
-//     });
-    
-//     tabla.appendChild(tbody);
-//     container.appendChild(tabla);
-    
-//     // Agregar espacio entre tablas
-//     const br = document.createElement("br");
-//     container.appendChild(br);
-// }
 
 function crearTablaCategoria(container, insumos, titulo) {
     const tabla = document.createElement("table");
@@ -146,52 +58,7 @@ function crearTablaCategoria(container, insumos, titulo) {
     botonCrear.dataset.categoria = titulo;
 
     botonCrear.addEventListener("click", () => {
-        if (document.getElementById("popup")) return;
-
-        const modalHTML = `
-          <div id="popup" class="modal-overlay active">
-            <div class="modal">
-              <h2>Nuevo Insumo</h2>
-              <form id="formInsumo">
-                <label for="producto">Producto</label>
-                <input type="text" id="producto" name="producto" required>
-    
-                <label for="descripcion">Descripción</label>
-                <input type="text" id="descripcion" name="descripcion" required>
-    
-                <label for="cantidad">Cantidad</label>
-                <input type="number" id="cantidad" name="cantidad" required min="1">
-    
-                <div class="btns">
-                  <button type="submit" class="btn-guardar">Guardar</button>
-                  <button type="button" class="btn-cancelar" onclick="cerrarPopup()">Cancelar</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        `;
-    
-        // Crear un div contenedor temporal para insertar HTML
-        const temp = document.createElement("div");
-        temp.innerHTML = modalHTML;
-    
-        // Agregar solo el nodo real (div.modal-overlay)
-        document.body.appendChild(temp.firstElementChild);
-
-        document.getElementById("formInsumo").addEventListener("submit", function (e) {
-            e.preventDefault();
-      
-            const producto = document.getElementById("producto").value;
-            const descripcion = document.getElementById("descripcion").value;
-            const cantidad = document.getElementById("cantidad").value;
-      
-            console.log("Nuevo insumo:", { producto, descripcion, cantidad });
-      
-            // Aquí puedes hacer cosas como enviar a la base de datos, etc.
-      
-            cerrarPopup();
-          });
-
+        saveOrUpdatePopUp(botonCrear)
     });
 
     crearCell.appendChild(botonCrear);
@@ -217,6 +84,7 @@ function crearTablaCategoria(container, insumos, titulo) {
     insumos.forEach(insumo => {
         const fila = document.createElement("tr");
         fila.className = "fila-insumo";
+        // fila.id = `${}-${}`  
 
         const celdaProducto = document.createElement("td");
         celdaProducto.textContent = insumo.nombre_insumo;
@@ -239,11 +107,34 @@ function crearTablaCategoria(container, insumos, titulo) {
         iconoEliminar.title = "Eliminar";
         iconoEliminar.dataset.id = insumo.id;
 
+        iconoEliminar.addEventListener("click", (e) => {
+            e.preventDefault()
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede deshacer",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    user_id = localStorage.getItem("userSession")
+                    eliminarProducto(insumo.id, insumo.punto_control_id, user_id) 
+                }
+            });
+        })
+
         const iconoEditar = document.createElement("i");
         iconoEditar.className = "fas fa-edit";
         iconoEditar.style.cursor = "pointer";
         iconoEditar.title = "Editar";
         iconoEditar.dataset.id = insumo.id;
+
+        iconoEditar.addEventListener("click", () => {
+            saveOrUpdatePopUp(iconoEditar, insumo)
+        })
 
         celdaAcciones.appendChild(iconoEliminar);
         celdaAcciones.appendChild(iconoEditar);
@@ -266,4 +157,154 @@ function crearTablaCategoria(container, insumos, titulo) {
 function cerrarPopup() {
     const modal = document.getElementById("popup");
     if (modal) modal.remove();
+}
+
+async function eliminarProducto(id, punto_control_id, user_id){
+    try {
+        const response = await fetch(`http://localhost:3000/api-giro/insumo/${id}/${punto_control_id}/${user_id}`,{
+            method: "DELETE"
+        });
+        const result = await response.json();
+        if (result.success == true) {
+            Swal.fire({
+                icon: 'success',
+                title: result.result_message,
+                text: 'El insumo ha sido eliminado con éxito!',
+            }).then(()=>{
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: result.result_message,
+                text: 'No fue posible eliminar el insumo',
+            });
+        }
+    } catch (error) {
+        console.error('Error al intentar eliminar insumo:', error);
+    }
+}
+
+function saveOrUpdatePopUp(btn, insumo = null){
+    if (document.getElementById("popup")) return;
+
+    let modalHTML = ``
+    
+    if(btn.className == 'btn-crear'){
+        modalHTML = `
+        <div id="popup" class="modal-overlay active">
+          <div class="modal">
+            <h2>Nuevo Insumo</h2>
+            <form id="formInsumo">
+              <label for="producto">Producto</label>
+              <input type="text" id="producto" name="producto" required>
+  
+              <label for="descripcion">Descripción</label>
+              <input type="text" id="descripcion" name="descripcion" required>
+  
+              <label for="cantidad">Cantidad</label>
+              <input type="number" id="cantidad" name="cantidad" required min="1">
+  
+              <div class="btns">
+                <button type="submit" class="btn-guardar">Guardar</button>
+                <button type="button" class="btn-cancelar" onclick="cerrarPopup()">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+    if(btn.className == 'fas fa-edit' && insumo){
+        modalHTML = `
+        <div id="popup" class="modal-overlay active">
+          <div class="modal">
+            <h2>Nuevo Insumo</h2>
+            <form id="formInsumo">
+              <label for="producto">Producto</label>
+              <input type="text" id="producto" name="producto" value="${insumo.nombre_insumo}" required>
+  
+              <label for="descripcion">Descripción</label>
+              <input type="text" id="descripcion" name="descripcion" value="${insumo.descripcion}" required>
+  
+              <label for="cantidad">Cantidad</label>
+              <input type="number" id="cantidad" name="cantidad"  value="${insumo.cantidad}" required min="1">
+  
+              <div class="btns">
+                <button type="submit" class="btn-guardar">Editar</button>
+                <button type="button" class="btn-cancelar" onclick="cerrarPopup()">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    // Crear un div contenedor temporal para insertar HTML
+    const temp = document.createElement("div");
+    temp.innerHTML = modalHTML;
+
+    // Agregar solo el nodo real (div.modal-overlay)
+    document.body.appendChild(temp.firstElementChild);
+
+    document.getElementById("formInsumo").addEventListener("submit", function (e) {
+        e.preventDefault();
+        
+
+        const producto = document.getElementById("producto").value;
+        const descripcion = document.getElementById("descripcion").value;
+        const cantidad = document.getElementById("cantidad").value;
+        const user_id = localStorage.getItem("userSession")
+
+        let dataInsumo = {
+            id: insumo.id,
+            nombre_insumo: producto,
+            descripcion: descripcion,
+            cantidad: cantidad,
+            user_id
+            // punto_control_id: insumo.punto_control_id,
+            // categoria_id: insumo.categoria_id
+        }
+
+        crearActualizarProducto(dataInsumo)
+        // Aquí puedes hacer cosas como enviar a la base de datos, etc.
+  
+        cerrarPopup();
+      });
+}
+
+
+async function crearActualizarProducto(insumo){
+    try {
+        let id= "id" in insumo ? insumo.id : null
+        let url = "http://localhost:3000/api-giro/insumo/"
+        if(id) {
+            url += insumo.id
+            delete insumo.id;
+        }  
+        const response = await fetch(url,{
+            method: id ? "PUT" : "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(insumo)
+        });
+        const result = await response.json();
+        if (result.success == true) {
+            Swal.fire({
+                icon: 'success',
+                title: result.result_message,
+                text: `El insumo ha sido ${id ? "actualizado" : "creado"} con éxito!`,
+            }).then(()=>{
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: result.result_message,
+                text: `No fue posible ${id ? "actualizar" : "crear"} el insumo`,
+            });
+        }
+    } catch (error) {
+        console.error(`Error al intentar ${id ? "actualizar" : "crear"} el insumo: ${error}`);
+    }
 }

@@ -620,7 +620,9 @@ router.get("/insumo/", async (req, res) => {
                 ON i.categoria_id = c.id 
                 INNER JOIN punto_de_control p
                 ON p.id = i.punto_control_id
-                WHERE p.nombre = $1`;
+                WHERE p.nombre = $1 
+                AND i.active = true
+                `;
 
     let result = '';
 
@@ -765,8 +767,8 @@ router.put("/insumo/:id", async (req, res) => {
 
         try{
             let query = `UPDATE insumo
-            SET nombre_insumo=?, descripcion=?, cantidad=?
-            WHERE id=?;`
+            SET nombre_insumo= $1, descripcion=$2, cantidad=$3
+            WHERE id=$4;`
             insumo = await pool.query(query, [nombre_insumo, descripcion, cantidad, id]);
         }catch(e){
             const error = new Error(`Ha ocurrido un error al intentar actualizar el insumo con id ${id}. ${e.message}`);
@@ -796,9 +798,8 @@ router.put("/insumo/:id", async (req, res) => {
     }
 })
 
-router.delete("/insumo/:id", async (req, res) => {
-    const {id} = req.params
-    const {user_id} = req.body
+router.delete("/insumo/:id/:punto_control_id/:user_id", async (req, res) => {
+    const {id, punto_control_id, user_id} = req.params
 
     try {
 
@@ -818,15 +819,15 @@ router.delete("/insumo/:id", async (req, res) => {
         }
            
         if (user.rows[0].tipo_usuario === "VIEWER") {
-            const error = new Error(`No tienes permiso para guardar el insumo "${nombre_insumo}"`);
+            const error = new Error("No tienes permiso para eliminar insumos del actual punto de control");
             error.statusCode = 403;
             throw error;
         }
 
         let insumo = ''
         try{
-            let query = `DELETE insumo WHERE id=?;`
-            insumo = await pool.query(query, [id]);
+            let query = `UPDATE insumo SET active = false WHERE id= $1 AND punto_control_id =$2;`
+            insumo = await pool.query(query, [id, punto_control_id]);
         }catch(e){
             const error = new Error(`Ha ocurrido un error al intentar eliminar el insumo con id ${id}. ${e.message}`);
             error.statusCode = 400;
