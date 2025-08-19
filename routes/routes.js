@@ -5,7 +5,9 @@ const {
     validarUsuario
 } = require("../utils/utils")
 const bcrypt = require('bcrypt');
-const { response } = require("express");
+const {
+    response
+} = require("express");
 
 
 router.post("/login", async (req, res) => {
@@ -19,7 +21,7 @@ router.post("/login", async (req, res) => {
             error.statusCode = 401;
             throw error;
         }
-        const query = "SELECT * FROM usuario WHERE nombre_usuario = $1"
+        const query = "SELECT * FROM usuario WHERE nombre_usuario = $1 AND activo = true"
         let usuario = await pool.query(query, [nombre_usuario]);
 
         if (usuario.rows.length < 1) {
@@ -62,26 +64,26 @@ router.get("/usuario/:id", async (req, res) => {
     const user_id = req.query.user_id
 
     try {
-        if(!id || !user_id){
+        if (!id || !user_id) {
             const error = new Error("Campos vacios");
             error.statusCode = 404;
             throw error;
         }
-    
-        let query = "SELECT * FROM usuario WHERE id= $1"
+
+        let query = "SELECT * FROM usuario WHERE id= $1 AND tipo_usuario = 'ADMIN'"
         let user = await pool.query(query, [user_id]);
         if (!user || user.rows.length === 0) {
-            const error = new Error("Usuario administrador no encontrado");
+            const error = new Error("No tienes permiso para acceder a esta informacion");
             error.statusCode = 404;
             throw error;
         }
-           
-        if (user.rows[0].tipo_usuario === "VIEWER") {
-            const error = new Error("No tienes permiso para acceder a esta informacion");
-            error.statusCode = 403;
-            throw error;
-        }
-        
+
+        // if (user.rows[0].tipo_usuario === "VIEWER") {
+        //     const error = new Error("No tienes permiso para acceder a esta informacion");
+        //     error.statusCode = 403;
+        //     throw error;
+        // }
+
         query = 'select u.*, pdc.nombre AS punto_de_control from usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id where u.id = $1 ';
 
         let usuario = await pool.query(query, [id]);
@@ -118,27 +120,27 @@ router.get("/usuario", async (req, res) => {
     try {
         const user_id = req.query.user_id
 
-        if(!user_id){
+        if (!user_id) {
             const error = new Error("Campos vacios");
             error.statusCode = 404;
             throw error;
         }
-    
-        let query = "SELECT * FROM usuario WHERE id= $1"
+
+        let query = "SELECT * FROM usuario WHERE id= $1 AND tipo_usuario = 'ADMIN'"
         let user = await pool.query(query, [user_id]);
         if (!user || user.rows.length === 0) {
-            const error = new Error("Usuario administrador no encontrado");
+            const error = new Error("No tienes permiso para acceder a esta informacion");
             error.statusCode = 404;
             throw error;
         }
-           
-        if (user.rows[0].tipo_usuario === "VIEWER") {
-            const error = new Error("No tienes permiso para acceder a esta informacion");
-            error.statusCode = 403;
-            throw error;
-        }
-    
-        let SQL = 'SELECT u.id, u.nombre_completo, u.nombre_usuario, u.tipo_usuario, pdc.nombre AS punto_de_control FROM usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id ';
+
+        // if (user.rows[0].tipo_usuario === "VIEWER") {
+        //     const error = new Error("No tienes permiso para acceder a esta informacion");
+        //     error.statusCode = 403;
+        //     throw error;
+        // }
+
+        let SQL = 'SELECT u.id, u.nombre_completo, u.nombre_usuario, u.tipo_usuario, pdc.nombre AS punto_de_control FROM usuario u INNER JOIN punto_de_control pdc ON u.punto_de_control_id = pdc.id WHERE u.activo = true';
         let users = await pool.query(SQL);
 
         if (users.rows.length == 0) {
@@ -185,7 +187,7 @@ router.post("/usuario/", async (req, res) => {
 
         const user_id = req.query.user_id
 
-        if(!user_id){
+        if (!user_id) {
             const error = new Error("El user_id es requerido");
             error.statusCode = 404;
             throw error;
@@ -198,7 +200,7 @@ router.post("/usuario/", async (req, res) => {
             error.statusCode = 404;
             throw error;
         }
-        
+
         if (user.rows[0].tipo_usuario === "VIEWER") {
             const error = new Error("Su perfil no posee los permisos para crear un usuario");
             error.statusCode = 403;
@@ -247,12 +249,12 @@ router.put('/usuario/:id', async (req, res) => {
     const user_id = req.query.user_id
 
     try {
-        if(!id || !user_id){
+        if (!id || !user_id) {
             const error = new Error("Campos vacios");
             error.statusCode = 404;
             throw error;
         }
-    
+
         let query = "SELECT * FROM usuario WHERE id= $1"
         let user = await pool.query(query, [user_id]);
         if (!user || user.rows.length === 0) {
@@ -260,17 +262,17 @@ router.put('/usuario/:id', async (req, res) => {
             error.statusCode = 404;
             throw error;
         }
-           
+
         if (user.rows[0].tipo_usuario === "VIEWER") {
             const error = new Error("No tienes permiso para actualizar un usuario");
             error.statusCode = 403;
             throw error;
         }
-    
+
         query = 'UPDATE usuario SET ';
         const valores = [];
         let contador = 1;
-    
+
         for (const campo in campos) {
             if (campos[campo] !== undefined) {
                 query += `${campo} = $${contador}, `;
@@ -278,11 +280,11 @@ router.put('/usuario/:id', async (req, res) => {
                 contador++;
             }
         }
-    
+
         query = query.slice(0, -2); // Remueve la última coma
         query += ` WHERE id = $${contador} RETURNING *`;
         valores.push(id);
-        
+
         const result = await pool.query(query, valores);
 
         if (result.rowCount === 0) {
@@ -319,27 +321,28 @@ router.delete('/usuario/:id', async (req, res) => {
 
     try {
 
-        if(!id || !user_id){
+        if (!id || !user_id) {
             const error = new Error("Campos vacios");
             error.statusCode = 404;
             throw error;
         }
-    
-        let query = "SELECT * FROM usuario WHERE id= $1"
+
+        let query = "SELECT * FROM usuario WHERE id= $1 AND tipo_usuario = 'ADMIN'"
         let user = await pool.query(query, [user_id]);
         if (!user || user.rows.length === 0) {
-            const error = new Error("Usuario administrador no encontrado");
+            const error = new Error("No tienes permiso para eliminar un usuario");
             error.statusCode = 404;
             throw error;
         }
-           
-        if (user.rows[0].tipo_usuario === "VIEWER") {
-            const error = new Error("No tienes permiso para eliminar un usuario");
-            error.statusCode = 403;
-            throw error;
-        }
+
+        // if (user.rows[0].tipo_usuario === "VIEWER") {
+        //     const error = new Error("No tienes permiso para eliminar un usuario");
+        //     error.statusCode = 403;
+        //     throw error;
+        // }
+
         // Ejecutamos la consulta DELETE en PostgreSQL
-        const result = await pool.query('DELETE FROM usuario WHERE id = $1 RETURNING *', [id]);
+        const result = await pool.query('UPDATE usuario SET activo = false WHERE id = $1 RETURNING *', [id]);
 
         if (result.rowCount === 0) {
             const error = new Error('No se encontró el usuario para eliminar');
@@ -427,10 +430,11 @@ router.get('/interdeposito/', async (req, res) => {
             error.statusCode = 404;
             throw error;
         }
-        
-        let punto_de_control_id = userResult.rows[0].punto_de_control_id;
 
-        let result = await pool.query(`
+        let punto_de_control_id = userResult.rows[0].punto_de_control_id;
+        let params = []
+
+        query = `
             SELECT 
                 i.id,
                 i.usuario_id,
@@ -448,11 +452,21 @@ router.get('/interdeposito/', async (req, res) => {
                 punto_de_control p_origen ON i.origen = p_origen.id
             INNER JOIN 
                 punto_de_control p_destino ON i.destino = p_destino.id
+        `
+
+        if(userResult.rows[0].tipo_usuario == 'ADMIN'){
+            query += `ORDER BY 
+            i.id DESC;`
+        }else{
+            query += `
             WHERE 
                 i.destino = $1
             ORDER BY 
                 i.id DESC;
-        `, [punto_de_control_id]);
+            `
+            params.push(punto_de_control_id)
+        }
+        let result = await pool.query(query, params);
 
         if (result.rowCount === 0) {
             return res.json({
@@ -487,7 +501,7 @@ router.get('/interdeposito/', async (req, res) => {
             result_proceso: 'GET HISTORIAL INTERDEPOSITO',
             result_data: response.filter(Boolean),
         });
-        
+
     } catch (error) {
         res.status(error.statusCode || 500).json({
             success: false,
@@ -517,33 +531,24 @@ router.post("/interdeposito/", async (req, res) => {
             throw error;
         }
 
-        if(origen == destino){
+        if (origen == destino) {
             const error = new Error(" El origen y destino no pueden ser iguales!");
             error.statusCode = 400;
             throw error;
         }
 
-        cantidadQuery = "SELECT * FROM insumo WHERE id= $1 AND punto_control_id = $2"
-        let query = "UPDATE insumo SET cantidad = cantidad - $1 WHERE id= $2 AND punto_control_id = $3";
 
+        let query = "SELECT * FROM insumo WHERE id= $1 AND punto_control_id = $2"
 
-        await Promise.all(insumos.map(async (insumo)=>{
+        await Promise.all(insumos.map(async (insumo) => {
 
-            let result = await pool.query(cantidadQuery, [insumo.id, origen]);
+            let result = await pool.query(query, [insumo.id, origen]);
 
-            if(result.rows[0].cantidad < parseInt(insumo.cantidad)){
+            if (result.rowCount > 0 && result.rows[0].cantidad < parseInt(insumo.cantidad)) {
                 const error = new Error(`La cantidad del insumo ${insumo.nombre_insumo} excede la disponible!`);
                 error.statusCode = 400;
                 throw error;
-            }else{
-
-                result = await pool.query(query, [parseInt(insumo.cantidad), insumo.id, origen]);
-                if (result.rowCount == 0) {
-                    const error = new Error('No fue posible efectuar la actualizacion');
-                    error.statusCode = 400;
-                    throw error;
-                }
-            }   
+            }
         }))
 
         query = `INSERT INTO interdeposito (usuario_id, insumos, origen, destino, telefono)
@@ -572,9 +577,9 @@ router.post("/interdeposito/", async (req, res) => {
     }
 })
 
-router.get("/punto_de_control/:id", async (req, res) => {
+router.get("/punto_de_control/user/:id", async (req, res) => {
 
-    let user_id = req.params.id 
+    let user_id = req.params.id
     let query = 'SELECT p.id, p.nombre AS punto_de_control FROM usuario u INNER JOIN punto_de_control p ON u.punto_de_control_id = p.id WHERE u.id = $1';
 
     let result = '';
@@ -611,22 +616,67 @@ router.get("/punto_de_control/:id", async (req, res) => {
 })
 
 
-router.get("/insumo/", async (req, res) => {
+router.get("/punto_de_control/:nombre", async (req, res) => {
 
-    let punto_control = req.query.punto_control
-    let query = `SELECT i.*, c.nombre AS nombre_categoria 
-                FROM insumo i 
-                INNER JOIN categoria c 
-                ON i.categoria_id = c.id 
-                INNER JOIN punto_de_control p
-                ON p.id = i.punto_control_id
-                WHERE p.nombre = $1 
-                AND i.active = true
-                `;
+    let nombre = req.params.nombre
+    let query = 'SELECT * FROM punto_de_control WHERE nombre = $1';
 
     let result = '';
 
     try {
+
+        result = await pool.query(query, [nombre]);
+
+        if (result.rows.length == 0) {
+            const error = new Error("No hay registros por mostrar");
+            error.statusCode = 404;
+            throw error;
+        } else {
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'PUNTO DE CONTROL OBTENIDO',
+                result_rows: result.rowCount,
+                result_proceso: 'GET ONE PUNTO DE CONTROL',
+                result_data: result.rows
+            })
+        }
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET ONE PUNTO DE CONTROL',
+            result_data: []
+        })
+    }
+})
+
+
+router.get("/insumo/", async (req, res) => {
+
+    let punto_control = req.query.punto_control
+    let result = '';
+
+    try {
+        let query = `SELECT *, nombre AS nombre_categoria FROM categoria WHERE estado = 'activa'`
+        categorias = await pool.query(query);
+
+        if (categorias.rows.length == 0) {
+            const error = new Error("No se encontraron categorias");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        query = `SELECT i.*
+            FROM insumo i 
+            INNER JOIN punto_de_control p
+            ON p.id = i.punto_control_id
+            WHERE p.nombre = $1
+            AND i.active = true
+            `;
 
         result = await pool.query(query, [punto_control]);
 
@@ -635,24 +685,55 @@ router.get("/insumo/", async (req, res) => {
             error.statusCode = 404;
             throw error;
         } else {
-            let response= {}
-            result.rows.forEach( i => {
-                let categoria = i.nombre_categoria 
-                if( categoria in response ){
-                    delete i.nombre_categoria
-                    response[categoria].push(i) 
-                }else{
-                    delete i.nombre_categoria
-                    response[categoria] = [i]
-                }
+            let response = {}
+            categorias.rows.forEach(c => {
+                insumos = result.rows.filter(i => i.categoria_id == c.id)
+                response[c.nombre_categoria] = insumos
             });
-            res.json({ 
+            res.json({
                 success: true,
                 status: 200,
                 result_message: 'LISTA DE INSUMOS OBTENIDA',
                 result_rows: result.rowCount,
                 result_proceso: 'GET ALL INSUMOS',
                 result_data: response
+            })
+        }
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET ALL INSUMOS',
+            result_data: []
+        })
+    }
+})
+
+router.get("/insumo/:punto_control_id", async (req, res) => {
+
+    let punto_control_id = req.params.punto_control_id
+    let result = '';
+
+    try {
+        let query = `SELECT * FROM insumo WHERE punto_control_id = $1 AND active = true`
+        result = await pool.query(query, [punto_control_id]);
+
+        if (result.rows.length == 0) {
+            const error = new Error("No se encontraron insumos por mostrar");
+            error.statusCode = 404;
+            throw error;
+        } else {
+
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'LISTA DE INSUMOS OBTENIDA',
+                result_rows: result.rowCount,
+                result_proceso: 'GET ALL INSUMOS',
+                result_data: result.rows
             })
         }
 
@@ -684,27 +765,21 @@ router.post("/insumo/", async (req, res) => {
             const error = new Error("Campos vacios!");
             error.statusCode = 400;
             throw error;
-        }   
-        
-        let query = "SELECT * FROM usuario WHERE id= $1"
+        }
+
+        let query = "SELECT * FROM usuario WHERE id= $1 AND tipo_usuario = 'ADMIN'"
         let user = await pool.query(query, [user_id]);
         if (!user || user.rows.length === 0) {
-            const error = new Error("Usuario no encontrado");
+            const error = new Error("No tienes permiso para crear el insumo");
             error.statusCode = 404;
-            throw error;
-        }
-           
-        if (user.rows[0].tipo_usuario === "VIEWER") {
-            const error = new Error(`No tienes permiso para guardar el insumo "${nombre_insumo}"`);
-            error.statusCode = 403;
             throw error;
         }
 
         let insumo = ''
-        try{
+        try {
             let query = "INSERT INTO insumo (categoria_id, nombre_insumo, punto_control_id, descripcion, cantidad) VALUES ($1, $2, $3, $4, $5) "
             insumo = await pool.query(query, [categoria_id, nombre_insumo, punto_control_id, descripcion, cantidad]);
-        }catch(e){
+        } catch (e) {
             const error = new Error(`Ha ocurrido un error al intentar guardar el insumo ${nombre_insumo}. ${e.message}`);
             error.statusCode = 400;
             throw error
@@ -733,7 +808,9 @@ router.post("/insumo/", async (req, res) => {
 })
 
 router.put("/insumo/:id", async (req, res) => {
-    const {id} = req.params
+    const {
+        id
+    } = req.params
     const {
         nombre_insumo,
         descripcion,
@@ -748,7 +825,7 @@ router.put("/insumo/:id", async (req, res) => {
             error.statusCode = 400;
             throw error;
         }
-        
+
         let query = "SELECT * FROM usuario WHERE id= $1"
         let user = await pool.query(query, [user_id]);
         if (!user || user.rows.length === 0) {
@@ -756,7 +833,7 @@ router.put("/insumo/:id", async (req, res) => {
             error.statusCode = 404;
             throw error;
         }
-           
+
         if (user.rows[0].tipo_usuario === "VIEWER") {
             const error = new Error(`No tienes permiso para guardar el insumo "${nombre_insumo}"`);
             error.statusCode = 403;
@@ -765,12 +842,12 @@ router.put("/insumo/:id", async (req, res) => {
 
         let insumo = ''
 
-        try{
+        try {
             let query = `UPDATE insumo
             SET nombre_insumo= $1, descripcion=$2, cantidad=$3
             WHERE id=$4;`
             insumo = await pool.query(query, [nombre_insumo, descripcion, cantidad, id]);
-        }catch(e){
+        } catch (e) {
             const error = new Error(`Ha ocurrido un error al intentar actualizar el insumo con id ${id}. ${e.message}`);
             error.statusCode = 400;
             throw error
@@ -799,7 +876,11 @@ router.put("/insumo/:id", async (req, res) => {
 })
 
 router.delete("/insumo/:id/:punto_control_id/:user_id", async (req, res) => {
-    const {id, punto_control_id, user_id} = req.params
+    const {
+        id,
+        punto_control_id,
+        user_id
+    } = req.params
 
     try {
 
@@ -807,8 +888,8 @@ router.delete("/insumo/:id/:punto_control_id/:user_id", async (req, res) => {
             const error = new Error("Campos vacios!");
             error.statusCode = 400;
             throw error;
-        } 
-        
+        }
+
         let query = "SELECT * FROM usuario WHERE id= $1"
         let user = await pool.query(query, [user_id]);
 
@@ -817,7 +898,7 @@ router.delete("/insumo/:id/:punto_control_id/:user_id", async (req, res) => {
             error.statusCode = 404;
             throw error;
         }
-           
+
         if (user.rows[0].tipo_usuario === "VIEWER") {
             const error = new Error("No tienes permiso para eliminar insumos del actual punto de control");
             error.statusCode = 403;
@@ -825,10 +906,10 @@ router.delete("/insumo/:id/:punto_control_id/:user_id", async (req, res) => {
         }
 
         let insumo = ''
-        try{
+        try {
             let query = `UPDATE insumo SET active = false WHERE id= $1 AND punto_control_id =$2;`
             insumo = await pool.query(query, [id, punto_control_id]);
-        }catch(e){
+        } catch (e) {
             const error = new Error(`Ha ocurrido un error al intentar eliminar el insumo con id ${id}. ${e.message}`);
             error.statusCode = 400;
             throw error
@@ -856,41 +937,72 @@ router.delete("/insumo/:id/:punto_control_id/:user_id", async (req, res) => {
     }
 })
 
-router.post("/categoria/", async (req, res) => {
+router.get("/categoria/:nombre", async (req, res) => {
+
+    let nombre = req.params.nombre
+    let query = 'SELECT * FROM categoria WHERE nombre = $1';
+
+    let result = '';
+
+    try {
+
+        result = await pool.query(query, [nombre]);
+
+        if (result.rows.length == 0) {
+            const error = new Error("No hay registros por mostrar");
+            error.statusCode = 404;
+            throw error;
+        } else {
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'CATEGORIA OBTENIDA',
+                result_rows: result.rowCount,
+                result_proceso: 'GET ONE CATEGORIA',
+                result_data: result.rows
+            })
+        }
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET ONE CATEGORIA',
+            result_data: []
+        })
+    }
+})
+
+router.post("/categoria", async (req, res) => {
     const {
         nombre,
         descripcion,
-        estado,
         user_id
     } = req.body;
 
     try {
 
-        if (!nombre || !descripcion || !estado) {
+        if (!nombre || !descripcion) {
             const error = new Error("Campos vacios!");
             error.statusCode = 400;
             throw error;
-        }   
+        }
 
-        let query = "SELECT * FROM usuario WHERE id= $1"
+        let query = "SELECT * FROM usuario WHERE id= $1 AND tipo_usuario = 'ADMIN' "
         let user = await pool.query(query, [user_id]);
         if (!user || user.rows.length === 0) {
-            const error = new Error("Usuario no encontrado");
-            error.statusCode = 404;
-            throw error;
-        }
-           
-        if (user.rows[0].tipo_usuario === "VIEWER") {
-            const error = new Error(`No tienes permiso para guardar la categoria "${nombre}"`);
-            error.statusCode = 403;
+            const error = new Error("No tienes permiso para guardar la categoria");
+            error.statusCode = 400;
             throw error;
         }
 
-        let categoria= ''
-        try{
-            let query = "INSERT INTO categoria (nombre, descripcion, estado) VALUES ($1, $2, $3)"
-            categoria = await pool.query(query, [nombre, descripcion, estado]);
-        }catch(e){
+        let categoria = ''
+        try {
+            let query = "INSERT INTO categoria (nombre, descripcion) VALUES ($1, $2)"
+            categoria = await pool.query(query, [nombre, descripcion]);
+        } catch (e) {
             const error = new Error(`Ha ocurrido un error al intentar guardar la categoria "${nombre}". ${e.message}`);
             error.statusCode = 400;
             throw error
@@ -931,7 +1043,7 @@ router.put('/interdeposito/:id', async (req, res) => {
 
     try {
 
-        if (!estado || estado ==! "rechazado" || estado ==! "aceptado") {
+        if (!estado || estado == !"rechazado" || estado == !"aceptado") {
             const error = new Error('El estado no es valido');
             error.statusCode = 400;
             throw error;
@@ -939,19 +1051,32 @@ router.put('/interdeposito/:id', async (req, res) => {
 
         // await pool.query('BEGIN');
 
-        let queryValidation = "SELECT * FROM usuario u INNER JOIN interdeposito i ON i.destino = u.punto_de_control_id WHERE u.id= $1 AND i.id= $2"
-        let validation = await pool.query(queryValidation, [user_id, id]);
-
+        let queryValidation = "SELECT * FROM interdeposito WHERE id= $1 AND estado = 'pendiente'; "
+        let validation = await pool.query(queryValidation, [id]); 
         if (validation.rowCount === 0) {
-            const error = new Error('Su usuario no tiene permitido editar este interdeposito');
+            const error = new Error("No se encontro un interdeposito pendiente con id: " ,id);
             error.statusCode = 404;
             throw error;
         }
+        let interdeposito = validation.rows[0]
 
+        let query = `SELECT * FROM usuario u INNER JOIN interdeposito i 
+                        ON i.destino = u.punto_de_control_id
+                        WHERE u.id = $1 AND i.id= $2`
+        let user = await pool.query(query, [user_id, id]);
 
-
-        let query = "UPDATE interdeposito SET estado = $1 WHERE id = $2 AND estado = 'pendiente';";
-        const result = await pool.query(query, [estado, id]);
+        if (!user || user.rows.length === 0) {
+            query = "SELECT * FROM usuario WHERE id= $1 AND tipo_usuario = 'ADMIN'"
+            user = await pool.query(query, [user_id]);
+            if (!user || user.rows.length === 0) {
+                const error = new Error("Usted no posee permisos para actualizar el interdeposito en cuestion");
+                error.statusCode = 401;
+                throw error;
+            }
+        }
+        
+        query = "UPDATE interdeposito SET estado = $1 WHERE id = $2 AND estado = 'pendiente';";
+        let result = await pool.query(query, [estado, id]);
 
         if (result.rowCount == 0) {
             const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
@@ -961,34 +1086,49 @@ router.put('/interdeposito/:id', async (req, res) => {
 
         if (estado == "aceptado" && Array.from(insumos).length) {
 
-            if(insumos.length == 0){
+            if (insumos.length == 0) {
                 const error = new Error('Los insumos son obligatorios!');
                 error.statusCode = 400;
                 throw error;
             }
 
             try {
-
-                let query = 'UPDATE insumo SET cantidad = cantidad + $1 WHERE id= $2 AND punto_control_id = $3'
-                let queryInsert = 'INSERT INTO insumo (nombre_insumo, punto_control_id, cantidad) VALUES ($1, $2, $3) RETURNING *';
-                
+                let queryUpdateOrigin = "UPDATE insumo SET cantidad = cantidad - $1 WHERE id= $2 AND punto_control_id = $3";
+                let queryUpdateDestiny = 'UPDATE insumo SET cantidad = cantidad + $1 WHERE id= $2 AND punto_control_id = $3'
+                let queryInsert = 'INSERT INTO insumo (categoria_id, nombre_insumo, punto_control_id, cantidad) VALUES ($1, $2, $3, $4) RETURNING *';
+                let queryInsumo = 'SELECT * FROM insumo WHERE id = $1'
                 await Promise.all(Array.from(insumos).map(async (insumo) => {
-                    if(insumo.estado ==! "apto" || insumo.estado ==! "no_apto"){
+
+                    if (insumo.estado == !"apto" || insumo.estado == !"no_apto") {
                         const error = new Error(`El estado del insumo con id ${insumo.id} no es valido`);
                         error.statusCode = 400;
                         throw error;
                     }
                     if (insumo.estado == "apto") {
-                        const updatedInsumo = await pool.query(query, [parseInt(insumo.cantidad), insumo.id, validation.rows[0].punto_de_control_id]);
+                        // console.log(insumo.id, interdeposito.origen)
+                        result = await pool.query(queryUpdateOrigin, [parseInt(insumo.cantidad), insumo.id, interdeposito.origen]);
+                        if (result.rowCount == 0) {
+                            const error = new Error('No fue posible efectuar la actualizacion');
+                            error.statusCode = 400;
+                            throw error;
+                        }
+                        const resultDataInsumo = await pool.query(queryInsumo, [insumo.id]) 
+                        if (resultDataInsumo.rowCount == 0) {
+                            const error = new Error('No fue posible obtener los datos del insumo: ' ,insumo.nombre_insumo);
+                            error.statusCode = 404;
+                            throw error;
+                        }
+                        const updatedInsumo = await pool.query(queryUpdateDestiny, [parseInt(insumo.cantidad), insumo.id, interdeposito.destino]);
                         if (updatedInsumo.rowCount === 0) {
                             const newProduct = await pool.query(queryInsert, [
+                                resultDataInsumo.rows[0].categoria_id,
                                 insumo.nombre_insumo,
-                                validation.rows[0].punto_de_control_id,
+                                interdeposito.destino,
                                 parseInt(insumo.cantidad)
                             ]);
 
-                            if(newProduct.rowCount == 0){
-                                const error = new Error(`No fue posible crear el producto ${insumo.nombre_insumo}`);
+                            if (newProduct.rowCount == 0) {
+                                const error = new Error(`No fue posible crear el insumo ${insumo.nombre_insumo}`);
                                 error.statusCode = 400;
                                 throw error;
                             }

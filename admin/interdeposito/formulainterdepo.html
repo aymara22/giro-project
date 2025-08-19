@@ -53,7 +53,7 @@
             <option value="2">Chacarita</option>
             <option value="3">Oficina</option>
             <option value="4">Predio Ferial</option>
-            <option value="5">Valle Chico</option>
+            <option value="5">Valle chico</option>
         </select>
 
         <label for="">Telefono: </label>
@@ -101,18 +101,37 @@
     <script>
         // Función para mostrar los campos de insumo
         document.addEventListener("DOMContentLoaded", () => {
-            cargarInsumos()
-            cargarPuntoDeControl();
+            const origenSelect = document.getElementById('origen');
+            const origen = document.getElementById("origen");
+
+            origen.addEventListener("change", async () => {
+              const valor = origen.value;
+              const texto = origen.options[origen.selectedIndex].text;
+              await obtenerPuntoDeControl(texto)
+              cargarInsumos()
+            });
+
+            if(localStorage.getItem("userProfile") == 'ADMIN'){
+
+                Array.from(destino.options).forEach(opt => {
+                origen.appendChild(opt.cloneNode(true));
+                });
+            
+                origen.selectedIndex = 0;
+
+            }else{
+                cargarPuntoDeControl();
+            }
+
         })
 
         async function cargarPuntoDeControl(){
             try {
                 const user_id = localStorage.getItem("userSession")
-                const response = await fetch(`http://localhost:3000/api-giro/punto_de_control/${user_id}`);
+                const response = await fetch(`http://localhost:3000/api-giro/punto_de_control/user/${user_id}`);
 
                 const punto_de_control = await response.json();
 
-                // Asumiendo que `insumos` es una lista de objetos con una propiedad "nombre" o similar
                 const origenSelect = document.getElementById('origen');
                 const option= document.createElement("option")
                 option.value = punto_de_control.result_data[0].id;
@@ -177,14 +196,12 @@
 
         async function cargarInsumos() {
             try {
-                const user_id = localStorage.getItem("userSession")
-                const response = await fetch(
-                    `http://localhost:3000/api-giro/insumo/?user_id=${user_id}`); // Reemplaza con la URL de tu endpoint
+                const punto_control_id = localStorage.getItem("puntoDeControlId")
+                const response = await fetch(`http://localhost:3000/api-giro/insumo/${punto_control_id}`); 
                 const insumos = await response.json();
 
-                // Asumiendo que `insumos` es una lista de objetos con una propiedad "nombre" o similar
                 const dataList = document.getElementById('insumos');
-                dataList.innerHTML = ''; // Limpiar opciones previas
+                dataList.innerHTML = '';
 
                 insumos.result_data.forEach(insumo => {
                     const option = document.createElement('option');

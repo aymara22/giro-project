@@ -54,9 +54,7 @@
     <br>
     <br>
 
-    <div class="enlace-container">
-        <a href="registrarusuario.html" class="registro-enlace">Crear Nueva Tabla de Insumos</a>
-    </div>
+    <div class="enlace-container"></div>
     <br>
     <br>
 
@@ -74,6 +72,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {   
             obtenerInsumos('Predio Ferial');
+            obtenerPuntoDeControl('Predio Ferial')
+            crearBotonCrearCategoria();
+
+            const crearCategoriaBtn = document.querySelector(".registro-enlace")
+            
+            if(crearCategoriaBtn){
+                crearCategoriaBtn.addEventListener("click",()=>{
+                    crearCategoria()
+                })
+            }
+
             // Coordenadas del punto de "Predio Ferial"
             const lat = -28.445206739765315 // Ejemplo de latitud
             const lon = -65.75917235569783 // Ejemplo de longitud

@@ -134,7 +134,8 @@
     
         // Si el usuario confirma, proceder a eliminar
         if (result.isConfirmed) {
-            const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}`, {
+            const user_id = localStorage.getItem("userSession")
+            const response = await fetch(`http://localhost:3000/api-giro/usuario/${id}?user_id=${user_id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'

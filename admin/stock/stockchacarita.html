@@ -51,9 +51,7 @@
 
     <div id="tablas"></div>
 
-    <div class="enlace-container">
-        <a href="registrarusuario.html" class="registro-enlace">Crear Nueva Tabla de Insumos</a>
-    </div>
+    <div class="enlace-container"></div>
     <br>
     <br>
 
@@ -71,6 +69,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             obtenerInsumos('Chacarita');
+            obtenerPuntoDeControl('Chacarita')
+            crearBotonCrearCategoria();
+
+            const crearCategoriaBtn = document.querySelector(".registro-enlace")
+            
+            if(crearCategoriaBtn){
+                crearCategoriaBtn.addEventListener("click",()=>{
+                    crearCategoria()
+                })
+            }
+
             const lat = -28.45957546231465 // Ejemplo de latitud
             const lon = -65.75319566245481 // Ejemplo de longitud
     
