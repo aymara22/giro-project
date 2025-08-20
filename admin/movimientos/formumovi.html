@@ -1,29 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>formumovi</title>
-    <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body>
-    <header>
-      <div class="logo-container">
-          <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
-      </div>
-      <div class="title-container">
-          <h1>PUNTO GIRO</h1>
-          <h2>CONTROL DE STOCK</h2>
-      </div>
-      <div>
-          <button type="button" class="logOut">cerrar sesion</button>
-      </div>
+
+<head>
+  <title>formumovi</title>
+  <link rel="icon" type="image/x-icon" href="/img/logoGiroofi.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style/movimiento.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Roboto:wght@700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/style/index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+
+  <header>
+    <div class="logo-container">
+      <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+    </div>
+    <div class="title-container">
+      <h1>PUNTO GIRO</h1>
+      <h2>CONTROL DE STOCK</h2>
+    </div>
+    <div>
+      <button type="button" class="logOut">cerrar sesion</button>
+    </div>
   </header>
-  </body>
-  <script src="../js/index.js"></script>
+  <nav>
+    <ul>
+      <li>
+        <a href="/admin/index.html">
+          <i class="fas fa-home"></i>>
+        </a>
+      </li>
+      <li><a href="movimiento.html">movimientos</a></li>
+    </ul>
+  </nav>
+  <br>
+  <br>
 
-  <body>
+  <div class="form-container">
+    <h2>Certificado de Egreso de Materiales</h2>
 
-    
-  </body>
+    <form id="form-certificado">
+      <!-- Selección de punto GIRO -->
+      <div class="section">
+        <label>Punto GIRO:</label>
+        <div class="inline">
+          <select id="punto_control" name="punto_control" required>
+          </select>
+        </div>
+      </div>
+
+      <!-- Categoría -->
+      <div class="section">
+        <label>Categoría:</label>
+        <div class="inline">
+          <select id="categorias" name="categorias" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="emprendedor">Emprendedor</option>
+            <option value="operador">Operador</option>
+            <option value="unica vez">Única vez</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Información -->
+      <div class="section">
+
+        <label>Nombre de la empresa/emprendimiento:</label>
+        <input type="text" id="nombreEmpresa" name="empresa" required>
+
+        <label>Nombre de la persona/representante:</label>
+        <input type="text" id="nombreRepresentante" name="representante" required>
+
+        <label>DNI:</label>
+        <input type="text" id="dni" name="dni" required>
+
+        <label>Teléfono</label>
+        <input type="text" id="contacto" name="contacto">
+      </div>
+
+      <div class="section">
+        <label>Salida de insumos:</label>
+        <div class="button-row">
+          <input type="text" id="buscarInsumo" list="insumos" placeholder="Buscar insumo">
+          <datalist id="insumos"></datalist>
+          <input type="number" id="cantidadInsumo" placeholder="Cantidad" min="1">
+          <button type="button" class="añadir" onclick="añadirInsumo()">Añadir</button>
+        </div>
+
+        <!-- Tabla de Insumos -->
+        <table id="insumosTable" hidden>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Cantidad</th>
+              <th>Eliminar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Aquí se agregarán los insumos -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Materiales -->
+      <div class="form-section">
+        <label>Materiales:</label>
+        <div class="materials-container">
+          <select id="materialSelect">
+            <option value="" disabled selected>Selecciona un material</option>
+            <option value="plastico">Plástico</option>
+            <option value="tapitas">Tapitas</option>
+            <option value="botellas del amor">Botellas del amor</option>
+            <option value="papel y carton">Papel y Cartón</option>
+            <option value="metal">Metal</option>
+            <option value="vidrios">Vidrios</option>
+            <option value="RAEEs">RAEEs</option>
+            <option value="aceite">Aceite</option>
+            <option value="pilas y baterias">Pilas y Baterías</option>
+            <option value="colillas">Colillas</option>
+            <option value="telas">Telas</option>
+            <option value="NFU">NFU</option>
+            <option value="chatarra">Chatarra</option>
+            <option value="escombro">Escombro</option>
+            <option value="poda">Poda</option>
+          </select>
+          <button type="button" onclick="agregarMaterial()">Añadir</button>
+        </div>
+
+        <table id="materialTable" hidden>
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Cantidad</th>
+              <th>Unidad</th>
+              <th>Eliminar</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button type="submit" class="submit-btn">Guardar formulario</button>
+    </form>
+  </div>
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="js/movimientos.js"></script>
+<script src="../js/index.js"></script>
+
 </html>
