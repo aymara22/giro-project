@@ -1299,6 +1299,119 @@ router.post("/movimiento", async (req, res) => {
 })
 
 
+router.get("/movimiento", async (req, res) => {
+
+    let query = `SELECT s.id, p.nombre AS punto_control, 
+                    s.categoria, 
+                    s.fecha_creacion, 
+                    s.nombre_empresa, 
+                    s.nombre_representante, 
+                    s.dni, 
+                    s.telefono 
+                FROM movimientos s 
+                INNER JOIN punto_de_control p 
+                ON p.id = s.punto_control_id `;
+
+    let result = '';
+
+    try {
+
+        result = await pool.query(query);
+
+        if (result.rows.length == 0) {
+            const error = new Error("No hay registros por mostrar");
+            error.statusCode = 404;
+            throw error;
+        } else {
+            res.json({
+                success: true,
+                status: 200,
+                result_message: 'MOVIMIENTOS OBTENIDOS',
+                result_rows: result.rowCount,
+                result_proceso: 'GET MOVIMIENTOS',
+                result_data: result.rows
+            })
+        }
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET MOVIMIENTOS',
+            result_data: []
+        })
+    }
+})
+
+
+router.get("/movimiento/:id", async (req, res) => {
+
+    let id = req.params.id
+    let query = `SELECT s.*, p.nombre AS punto_control
+                FROM movimientos s 
+                INNER JOIN punto_de_control p 
+                ON p.id = s.punto_control_id 
+                WHERE s.id=$1`;
+
+    let result = '';
+
+    try {
+
+        result = await pool.query(query, [id]);
+
+        if (result.rows.length == 0) {
+            const error = new Error("No existe un movimiento con id: " ,id);
+            error.statusCode = 404;
+            throw error;
+        } 
+
+        const movimiento = result.rows[0] 
+        delete movimiento.punto_control_id
+
+        try {
+            movimiento.insumos = movimiento.insumos ? JSON.parse(movimiento.insumos) : [];
+        } catch (err) {
+            movimiento.insumos = [];
+        }
+
+        query = `SELECT * FROM materiales WHERE movimiento_id = $1`
+
+        result = await pool.query(query, [movimiento.id]);
+
+        if (result.rows.length == 0) {
+            const error = new Error(`No existen materiales registrados para el movimiento con id "${id}"`);
+            error.statusCode = 404;
+            throw error;
+        }
+        
+        const materiales = result.rows
+
+        movimiento.materiales = materiales 
+
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'MOVIMIENTOS OBTENIDOS',
+            result_rows: materiales.length,
+            result_proceso: 'GET MOVIMIENTOS',
+            result_data: movimiento
+        })
+
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            status: error.statusCode || 500,
+            result_message: error.message,
+            result_rows: 0,
+            result_proceso: 'GET MOVIMIENTOS',
+            result_data: []
+        })
+    }
+})
+
 
 
 

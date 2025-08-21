@@ -137,3 +137,94 @@ document.getElementById("form-certificado").addEventListener("submit", async fun
     }
 });
 
+async function cargarMovimientos() {
+    const API_LISTADO = "http://localhost:3000/api-giro/movimiento";
+    const tbody = document.querySelector("#tablaMovimientos tbody");
+    try {
+        const response = await fetch(API_LISTADO);
+        const data = await response.json();
+
+        if (!data.success) {
+            alert("Error cargando movimientos");
+            return;
+        }
+
+        data.result_data.forEach(mov => {
+            const fila = document.createElement("tr");
+
+            fila.innerHTML = `
+                <td>${mov.id}</td>
+                <td>${mov.punto_control}</td>
+                <td>${mov.categoria}</td>
+                <td>${new Date(mov.fecha_creacion).toLocaleDateString()}</td>
+                <td>${mov.nombre_empresa}</td>
+                <td>${mov.nombre_representante}</td>
+                <td>${mov.dni}</td>
+                <td>${mov.telefono}</td>
+            `;
+
+            fila.addEventListener("click", () => cargarDetalle(mov.id));
+            tbody.appendChild(fila);
+        });
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+// Función para cargar los detalles de un movimiento
+async function cargarDetalle(id) {
+    try {
+        const API_DETALLE = "http://localhost:3000/api-giro/movimiento/";
+        const detalleDiv = document.getElementById("detalle");
+        const response = await fetch(API_DETALLE + id);
+        const data = await response.json();
+
+        if (!data.success) {
+            Swal.fire({
+                icon: "info",
+                title: "!No fue posible obtener el detalle!",
+                text: data.result_message
+            });
+            return
+        }
+
+        const mov = data.result_data;
+
+        document.getElementById("detalleId").textContent = mov.id;
+        document.getElementById("detalleCategoria").textContent = mov.categoria;
+        document.getElementById("detalleFecha").textContent = new Date(mov.fecha_creacion).toLocaleDateString();
+        document.getElementById("detalleEmpresa").textContent = mov.nombre_empresa;
+        document.getElementById("detalleRepresentante").textContent = mov.nombre_representante;
+        document.getElementById("detalleDni").textContent = mov.dni;
+        document.getElementById("detalleTelefono").textContent = mov.telefono;
+        document.getElementById("detallePuntoControl").textContent = mov.punto_control;
+
+        // Mostrar insumos
+        const insumosDiv = document.getElementById("detalleInsumos");
+        insumosDiv.innerHTML = "";
+        mov.insumos.forEach(insumo => {
+            insumosDiv.innerHTML += `
+                <div class="insumo">
+                    <strong>${insumo.nombre_insumo}</strong> - Cantidad: ${insumo.cantidad}
+                </div>
+            `;
+        });
+
+        // Mostrar materiales
+        const materialesDiv = document.getElementById("detalleMateriales");
+        materialesDiv.innerHTML = "";
+        mov.materiales.forEach(material => {
+            materialesDiv.innerHTML += `
+                <div class="material">
+                    <strong>${material.material}</strong> (${material.unidad_material}) - Cantidad: ${material.cantidad}
+                </div>
+            `;
+        });
+
+        detalleDiv.style.display = "block";
+        detalleDiv.scrollIntoView({ behavior: "smooth" });
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+

@@ -13,7 +13,28 @@ async function obtenerInsumos(punto) {
             Object.keys(insumos).forEach(clave => {
                 crearTablaCategoria(div, insumos[clave], clave);
             });
+            let totalInsumos = Object.values(insumos).flat(); 
 
+            let insumosBajos = totalInsumos.filter(insumo => Number(insumo.cantidad) <= 5);
+
+            if (insumosBajos.length > 0) {
+                Swal.fire({
+                    title: "⚠ ¡Atención!",
+                    html: `
+                        <p>Los siguientes insumos tienen pocas unidades:</p>
+                        <ul style="text-align: left; margin: 0; padding-left: 18px;">
+                            ${insumosBajos
+                                .map(i => `<li><b>${i.nombre_insumo}</b>: ${i.cantidad} unidades</li>`)
+                                .join("")}
+                        </ul>
+                    `,
+                    icon: "warning",
+                    timer: 5000,
+                    showConfirmButton: false,
+                    position: "top-end",
+                    toast: true
+                });
+            }
         } else {
             const div = document.getElementById("tablas");
             div.innerHTML = '<p>No se encontraron insumos para el punto de control Chacarita.</p>';
@@ -84,6 +105,9 @@ function crearTablaCategoria(container, insumos, categoria) {
     insumos.forEach(insumo => {
         const fila = document.createElement("tr");
         fila.className = "fila-insumo";
+        if(insumo.cantidad <= 5){
+            fila.style.background = "#FF6961"
+        }
 
         const celdaProducto = document.createElement("td");
         celdaProducto.textContent = insumo.nombre_insumo;
@@ -142,8 +166,8 @@ function crearTablaCategoria(container, insumos, categoria) {
             fila.appendChild(celdaAcciones);
 
         }
-        const celdaVacia = document.createElement("td");
-        fila.appendChild(celdaVacia);
+        // const celdaVacia = document.createElement("td");
+        // fila.appendChild(celdaVacia);
 
         tbody.appendChild(fila);
     });

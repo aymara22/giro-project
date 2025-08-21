@@ -5,8 +5,124 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/style/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+
+        #detalle {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .material, .insumo {
+            background-color: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border-left: 4px solid #007BFF;
+        }
+    </style>
 </head>
 <body>
-    <h1>Historial en proceso..</h1>
+    <header>
+        <div class="logo-container">
+          <img src="/img/logoGiroofi.png" alt="Logo Izquierda" class="logo">
+        </div>
+        <div class="title-container">
+          <h1>PUNTO GIRO</h1>
+          <h2>CONTROL DE STOCK</h2>
+        </div>
+        <div>
+          <button type="button" class="logOut">cerrar sesion</button>
+        </div>
+      </header>
+      <nav>
+        <ul>
+          <li>
+            <a href="/admin/index.html">
+              <i class="fas fa-home"></i>>
+            </a>
+          </li>
+          <li><a href="movimiento.html">movimientos</a></li>
+        </ul>
+      </nav>
+    <h1>Listado de Movimientos</h1>
+    <table id="tablaMovimientos">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Punto de Control</th>
+                <th>Categoría</th>
+                <th>Fecha</th>
+                <th>Nombre Empresa</th>
+                <th>Representante</th>
+                <th>DNI</th>
+                <th>Teléfono</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div id="detalle">
+        <h2>Detalle del Movimiento</h2>
+        <p><strong>ID:</strong> <span id="detalleId"></span></p>
+        <p><strong>Categoría:</strong> <span id="detalleCategoria"></span></p>
+        <p><strong>Fecha:</strong> <span id="detalleFecha"></span></p>
+        <p><strong>Nombre Empresa:</strong> <span id="detalleEmpresa"></span></p>
+        <p><strong>Representante:</strong> <span id="detalleRepresentante"></span></p>
+        <p><strong>DNI:</strong> <span id="detalleDni"></span></p>
+        <p><strong>Teléfono:</strong> <span id="detalleTelefono"></span></p>
+        <p><strong>Punto de Control:</strong> <span id="detallePuntoControl"></span></p>
+        
+        <h3>Insumos</h3>
+        <div id="detalleInsumos"></div>
+
+        <h3>Materiales</h3>
+        <div id="detalleMateriales"></div>
+    </div>
+    <script src="../js/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/movimientos.js"></script>
+    <script>
+        cargarMovimientos();
+    </script>
 </body>
 </html>
