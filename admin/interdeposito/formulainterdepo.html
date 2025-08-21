@@ -44,6 +44,7 @@
         <!-- Origen -->
         <label for="origen">Origen:</label>
         <select id="origen" name="origen" required>
+            <option value="" disabled selected>Selecciona una opción</option>
         </select>
 
         <!-- Destino -->
@@ -115,7 +116,9 @@
             if(localStorage.getItem("userProfile") == 'ADMIN'){
 
                 Array.from(destino.options).forEach(opt => {
-                origen.appendChild(opt.cloneNode(true));
+                    if (opt.value !== "") {
+                        origen.appendChild(opt.cloneNode(true));
+                    }
                 });
             
                 origen.selectedIndex = 0;

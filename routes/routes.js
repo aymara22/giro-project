@@ -1043,7 +1043,7 @@ router.put('/interdeposito/:id', async (req, res) => {
 
     try {
 
-        if (!estado || estado == !"rechazado" || estado == !"aceptado") {
+        if (!estado || estado ==! "rechazado" || estado ==! "aceptado") {
             const error = new Error('El estado no es valido');
             error.statusCode = 400;
             throw error;
@@ -1054,7 +1054,7 @@ router.put('/interdeposito/:id', async (req, res) => {
         let queryValidation = "SELECT * FROM interdeposito WHERE id= $1 AND estado = 'pendiente'; "
         let validation = await pool.query(queryValidation, [id]);
         if (validation.rowCount === 0) {
-            const error = new Error("No se encontro un interdeposito pendiente con id: ", id);
+            const error = new Error("No se encontro un interdeposito pendiente con id: " + id);
             error.statusCode = 404;
             throw error;
         }
@@ -1076,18 +1076,19 @@ router.put('/interdeposito/:id', async (req, res) => {
         }
 
         query = "UPDATE interdeposito SET estado = $1 WHERE id = $2 AND estado = 'pendiente';";
-        let result = await pool.query(query, [estado, id]);
 
-        if (result.rowCount == 0) {
-            const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
-            error.statusCode = 400;
-            throw error;
-        }
+        if (estado == "aceptado") {
 
-        if (estado == "aceptado" && Array.from(insumos).length) {
-
-            if (insumos.length == 0) {
+            if (Array.from(insumos).length == 0) {
                 const error = new Error('Los insumos son obligatorios!');
+                error.statusCode = 400;
+                throw error;
+            }
+
+            let result = await pool.query(query, [estado, id]);
+
+            if (result.rowCount == 0) {
+                const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
                 error.statusCode = 400;
                 throw error;
             }
@@ -1142,9 +1143,9 @@ router.put('/interdeposito/:id', async (req, res) => {
             }
 
             try {
-                let query = 'INSERT INTO remito (interdeposito_id, insumo_id, cantidad, estado) VALUES ($1, $2, $3, $4);'
+                let query = 'INSERT INTO remito (interdeposito_id, insumo_id, cantidad, estado, observacion) VALUES ($1, $2, $3, $4, $5);'
                 await Promise.all(Array.from(insumos).map(async (insumo) => {
-                    await pool.query(query, [id, insumo.id, insumo.cantidad, insumo.estado]);
+                    await pool.query(query, [id, insumo.id, insumo.cantidad, insumo.estado, insumo.observacion]);
                 }))
 
             } catch (error) {
@@ -1165,6 +1166,14 @@ router.put('/interdeposito/:id', async (req, res) => {
 
         } else {
             // await pool.query('COMMIT')
+
+            let result = await pool.query(query, [estado, id]);
+
+            if (result.rowCount == 0) {
+                const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
+                error.statusCode = 400;
+                throw error;
+            }
 
             res.json({
                 success: true,

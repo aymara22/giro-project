@@ -123,7 +123,11 @@ document.getElementById("form-certificado").addEventListener("submit", async fun
                 title: "¡Formulario guardado con exito!",
                 text: result.result_message
             }).then(() => {
-                window.location.href = "historial.html";
+                if(localStorage.getItem("userProfile") == 'ADMIN'){   
+                    window.location.href = "historial.html";
+                }else{
+                    window.location.href = "movimiento.html";
+                }
             });;
         } else {
             Swal.fire({
@@ -227,4 +231,6 @@ async function cargarDetalle(id) {
         console.error("Error:", error);
     }
 }
+
+
 

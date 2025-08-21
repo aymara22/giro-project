@@ -113,19 +113,23 @@
                             verInsumosBtn.href = "/admin/interdeposito/remito.html"
                             insumosCell.appendChild(verInsumosBtn);
                         }else{
-                            const verInsumosBtn = document.createElement('a');
-                            verInsumosBtn.textContent = 'Ver remito';
-                            verInsumosBtn.href = "#"
-                            verInsumosBtn.onclick = () => toggleInsumos(index);
-                            insumosCell.appendChild(verInsumosBtn);
-                            
-                            // Crear una fila oculta para los insumos
-                            const insumosRow = tbody.insertRow();
-                            insumosRow.style.display = 'none';
-                            insumosRow.setAttribute('id', `insumosRow-${index}`);
-                            const insumosCellFull = insumosRow.insertCell(0);
-                            insumosCellFull.colSpan = 7; // Ocupa todas las columnas
-                            insumosCellFull.innerHTML = generarTablaInsumos(registro.insumos);
+                            if(registro.insumos.length >= 1){
+                                const verInsumosBtn = document.createElement('a');
+                                verInsumosBtn.textContent = 'Ver remito';
+                                verInsumosBtn.href = "#"
+                                verInsumosBtn.onclick = () => toggleInsumos(index);
+                                insumosCell.appendChild(verInsumosBtn);
+                                
+                                // Crear una fila oculta para los insumos
+                                const insumosRow = tbody.insertRow();
+                                insumosRow.style.display = 'none';
+                                insumosRow.setAttribute('id', `insumosRow-${index}`);
+                                const insumosCellFull = insumosRow.insertCell(0);
+                                insumosCellFull.colSpan = 7; // Ocupa todas las columnas
+                                insumosCellFull.innerHTML = generarTablaInsumos(registro.insumos);
+                            }else{
+                                insumosCell.textContent = 'Sin insumos';
+                            }
                         }
                     });
                 } else {
@@ -147,6 +151,7 @@
                             <th>Nombre</th>
                             <th>Cantidad</th>
                             <th>Estado</th>
+                            <th>Observacion</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -158,6 +163,7 @@
                         <td>${insumo.nombre_insumo}</td>
                         <td>${insumo.cantidad}</td>
                         <td>${insumo.estado}</td>
+                        <td>${insumo.observacion}</td>
                     </tr>
                 `;
             });

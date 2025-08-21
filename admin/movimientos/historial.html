@@ -122,7 +122,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/movimientos.js"></script>
     <script>
-        cargarMovimientos();
+        document.addEventListener("DOMContentLoaded", ()=>{
+            cargarMovimientos();
+            if(localStorage.getItem("userProfile")=='VIEWER'){
+                window.location.href = 'movimiento.html'
+            }
+        })
     </script>
 </body>
 </html>

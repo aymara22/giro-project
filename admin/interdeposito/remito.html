@@ -60,6 +60,7 @@
                         <th>Nombre</th>
                         <th>Cantidad</th>
                         <th>Estado</th>
+                        <th>Observacion</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -139,12 +140,14 @@
                             <td>${element.nombre_insumo}</td>
                             <td>${element.cantidad}</td>
                             <td>
-                                <select name="estado" id="estado">
+                                <select name="estado" class="estadoInsumo" id="estado">
                                     <option value="" disabled selected>Selecciona una opción</option>
                                     <option value="apto">Apto</option>
                                     <option value="no_apto">No apto</option>
                                 </select>
                             </td>
+                            <td><input type="text" class="inputObservacion" placeholder="observacion"></td>
+
                             `
                             tabla.append(tr)
                         })
@@ -176,14 +179,16 @@
                         .querySelectorAll("tr")
                     insumos = await Promise.all(Array.from(tabla).map(async (insumo) => {
                         const id = insumo.querySelector("td:first-child").textContent;
-                        const estado = insumo.querySelector("td:last-child");
+                        const estado = insumo.querySelector(".estadoInsumo").value;
                         const nombre_insumo = insumo.querySelector("td:nth-child(2)").textContent;
                         const cantidad = insumo.querySelector("td:nth-child(3)").textContent;
+                        const observacion = insumo.querySelector(".inputObservacion").value;
                         return {
                             id,
                             cantidad,
                             nombre_insumo,
-                            estado: estado.querySelector(("select[name='estado']")).value
+                            estado: estado,
+                            observacion
                         };
                     }))
 
@@ -193,6 +198,8 @@
                         insumos: insumos,
                         user_id: localStorage.getItem("userSession") 
                     }
+
+                    console.log(insumos)
                 } else if (res.dismiss === Swal.DismissReason.cancel) {
                     let numeroRemito = document.querySelector('#numeroRemito').value;
                     data = {
