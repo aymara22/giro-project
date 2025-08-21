@@ -172,41 +172,36 @@
                 cancelButtonText: 'Rechazar',
                 confirmButtonText: 'Aprobar'
             }).then(async (res) => {
-                let data = {}
-                if (res.isConfirmed) {
-                    let numeroRemito = document.querySelector('#numeroRemito').value;
-                    let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
-                        .querySelectorAll("tr")
-                    insumos = await Promise.all(Array.from(tabla).map(async (insumo) => {
-                        const id = insumo.querySelector("td:first-child").textContent;
-                        const estado = insumo.querySelector(".estadoInsumo").value;
-                        const nombre_insumo = insumo.querySelector("td:nth-child(2)").textContent;
-                        const cantidad = insumo.querySelector("td:nth-child(3)").textContent;
-                        const observacion = insumo.querySelector(".inputObservacion").value;
-                        return {
-                            id,
-                            cantidad,
-                            nombre_insumo,
-                            estado: estado,
-                            observacion
-                        };
-                    }))
+                let numeroRemito = document.querySelector('#numeroRemito').value;
+                let tabla = document.querySelector(".tablaInsumos").querySelector("tbody")
+                    .querySelectorAll("tr")
+                insumos = await Promise.all(Array.from(tabla).map(async (insumo) => {
+                    const id = insumo.querySelector("td:first-child").textContent;
+                    const estado = insumo.querySelector(".estadoInsumo").value;
+                    const nombre_insumo = insumo.querySelector("td:nth-child(2)").textContent;
+                    const cantidad = insumo.querySelector("td:nth-child(3)").textContent;
+                    const observacion = insumo.querySelector(".inputObservacion").value;
+                    return {
+                        id,
+                        cantidad,
+                        nombre_insumo,
+                        estado: estado,
+                        observacion
+                    };
+                }))
 
-                    data = {
-                        estado: "aceptado",
-                        id: numeroRemito,
-                        insumos: insumos,
-                        user_id: localStorage.getItem("userSession") 
-                    }
+                let data = {
+                    id: numeroRemito,
+                    insumos: insumos,
+                    user_id: localStorage.getItem("userSession") 
+                }
 
-                    console.log(insumos)
-                } else if (res.dismiss === Swal.DismissReason.cancel) {
-                    let numeroRemito = document.querySelector('#numeroRemito').value;
-                    data = {
-                        estado: "rechazado",
-                        id: numeroRemito,
-                        user_id: localStorage.getItem("userSession") 
-                    }
+                if(res.dismiss === Swal.DismissReason.cancel){
+                    data.estado = "rechazado"
+                }
+
+                if(res.isConfirmed){
+                    data.estado = "aceptado"
                 }
 
                 const response = await fetch(

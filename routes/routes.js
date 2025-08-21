@@ -480,15 +480,11 @@ router.get('/interdeposito/', async (req, res) => {
 
         const response = await Promise.all(
             result.rows.map(async (registro) => {
-                if (registro.estado === "aceptado") {
-                    let insumos = await pool.query(
-                        `SELECT r.*, i.nombre_insumo FROM remito r INNER JOIN insumo i ON i.id = r.insumo_id WHERE interdeposito_id = $1`,
-                        [registro.id]
-                    );
-                    registro.insumos = insumos.rows;
-                } else {
-                    registro.insumos = [];
-                }
+                let insumos = await pool.query(
+                    `SELECT r.*, i.nombre_insumo FROM remito r INNER JOIN insumo i ON i.id = r.insumo_id WHERE interdeposito_id = $1`,
+                    [registro.id]
+                );
+                registro.insumos = insumos.rows;
                 return registro;
             })
         );
@@ -1043,10 +1039,16 @@ router.put('/interdeposito/:id', async (req, res) => {
 
     try {
 
-        if (!estado || estado ==! "rechazado" || estado ==! "aceptado") {
+        if (!estado || estado ==! "rechazado" || estado ==! "aceptado" ) {
             const error = new Error('El estado no es valido');
             error.statusCode = 400;
             throw error;
+        }
+
+        if(!insumos || Array.from(insumos).length == 0){
+            const error = new Error('Los insumos son obligatorios!');
+            error.statusCode = 400;
+            throw error
         }
 
         // await pool.query('BEGIN');
@@ -1054,7 +1056,7 @@ router.put('/interdeposito/:id', async (req, res) => {
         let queryValidation = "SELECT * FROM interdeposito WHERE id= $1 AND estado = 'pendiente'; "
         let validation = await pool.query(queryValidation, [id]);
         if (validation.rowCount === 0) {
-            const error = new Error("No se encontro un interdeposito pendiente con id: " + id);
+            const error = new Error("No se encontro un interdeposito pendiente con el id: " + id);
             error.statusCode = 404;
             throw error;
         }
@@ -1077,112 +1079,105 @@ router.put('/interdeposito/:id', async (req, res) => {
 
         query = "UPDATE interdeposito SET estado = $1 WHERE id = $2 AND estado = 'pendiente';";
 
-        if (estado == "aceptado") {
 
-            if (Array.from(insumos).length == 0) {
-                const error = new Error('Los insumos son obligatorios!');
-                error.statusCode = 400;
-                throw error;
-            }
+        let result = await pool.query(query, [estado, id]);
 
-            let result = await pool.query(query, [estado, id]);
+        if (result.rowCount == 0) {
+            const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
+            error.statusCode = 400;
+            throw error;
+        }
 
-            if (result.rowCount == 0) {
-                const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
-                error.statusCode = 400;
-                throw error;
-            }
-
-            try {
-                let queryUpdateOrigin = "UPDATE insumo SET cantidad = cantidad - $1 WHERE id= $2 AND punto_control_id = $3";
-                let queryUpdateDestiny = 'UPDATE insumo SET cantidad = cantidad + $1 WHERE id= $2 AND punto_control_id = $3'
-                let queryInsert = 'INSERT INTO insumo (categoria_id, nombre_insumo, punto_control_id, cantidad) VALUES ($1, $2, $3, $4) RETURNING *';
-                let queryInsumo = 'SELECT * FROM insumo WHERE id = $1'
-                await Promise.all(Array.from(insumos).map(async (insumo) => {
-
-                    if (insumo.estado == !"apto" || insumo.estado == !"no_apto") {
-                        const error = new Error(`El estado del insumo con id ${insumo.id} no es valido`);
+        try {
+            await Promise.all(Array.from(insumos).map(async (insumo) => {
+                if (insumo.estado == !"apto" || insumo.estado == !"no_apto") {
+                    const error = new Error(`El estado del insumo con id ${insumo.id} no es valido`);
+                    error.statusCode = 400;
+                    throw error;
+                }
+                if (insumo.estado == "apto" && estado == 'aceptado') {
+                    let queryUpdateOrigin = "UPDATE insumo SET cantidad = cantidad - $1 WHERE id= $2 AND punto_control_id = $3";
+                    result = await pool.query(queryUpdateOrigin, [parseInt(insumo.cantidad), insumo.id, interdeposito.origen]);
+                    if (result.rowCount == 0) {
+                        const error = new Error('No fue posible efectuar la actualizacion');
                         error.statusCode = 400;
                         throw error;
                     }
-                    if (insumo.estado == "apto") {
-                        // console.log(insumo.id, interdeposito.origen)
-                        result = await pool.query(queryUpdateOrigin, [parseInt(insumo.cantidad), insumo.id, interdeposito.origen]);
-                        if (result.rowCount == 0) {
-                            const error = new Error('No fue posible efectuar la actualizacion');
+                    let queryInsumo = 'SELECT * FROM insumo WHERE id = $1'
+                    const resultDataInsumo = await pool.query(queryInsumo, [insumo.id])
+                    if (resultDataInsumo.rowCount == 0) {
+                        const error = new Error('No fue posible obtener los datos del insumo: ', insumo.nombre_insumo);
+                        error.statusCode = 404;
+                        throw error;
+                    }
+                    let queryUpdateDestiny = 'UPDATE insumo SET cantidad = cantidad + $1 WHERE id= $2 AND punto_control_id = $3'
+                    const updatedInsumo = await pool.query(queryUpdateDestiny, [parseInt(insumo.cantidad), insumo.id, interdeposito.destino]);
+                    if (updatedInsumo.rowCount === 0) {
+                        let queryInsert = 'INSERT INTO insumo (categoria_id, nombre_insumo, punto_control_id, cantidad) VALUES ($1, $2, $3, $4) RETURNING *';
+                        const newProduct = await pool.query(queryInsert, [
+                            resultDataInsumo.rows[0].categoria_id,
+                            insumo.nombre_insumo,
+                            interdeposito.destino,
+                            parseInt(insumo.cantidad)
+                        ]);
+
+                        if (newProduct.rowCount == 0) {
+                            const error = new Error(`No fue posible crear o actualizar el insumo ${insumo.nombre_insumo}`);
                             error.statusCode = 400;
                             throw error;
                         }
-                        const resultDataInsumo = await pool.query(queryInsumo, [insumo.id])
-                        if (resultDataInsumo.rowCount == 0) {
-                            const error = new Error('No fue posible obtener los datos del insumo: ', insumo.nombre_insumo);
-                            error.statusCode = 404;
-                            throw error;
-                        }
-                        const updatedInsumo = await pool.query(queryUpdateDestiny, [parseInt(insumo.cantidad), insumo.id, interdeposito.destino]);
-                        if (updatedInsumo.rowCount === 0) {
-                            const newProduct = await pool.query(queryInsert, [
-                                resultDataInsumo.rows[0].categoria_id,
-                                insumo.nombre_insumo,
-                                interdeposito.destino,
-                                parseInt(insumo.cantidad)
-                            ]);
-
-                            if (newProduct.rowCount == 0) {
-                                const error = new Error(`No fue posible crear el insumo ${insumo.nombre_insumo}`);
-                                error.statusCode = 400;
-                                throw error;
-                            }
-                        }
                     }
+                }
 
-                }))
-            } catch (error) {
-                const err = new Error(error.message);
-                throw err;
-            }
-
-            try {
                 let query = 'INSERT INTO remito (interdeposito_id, insumo_id, cantidad, estado, observacion) VALUES ($1, $2, $3, $4, $5);'
-                await Promise.all(Array.from(insumos).map(async (insumo) => {
-                    await pool.query(query, [id, insumo.id, insumo.cantidad, insumo.estado, insumo.observacion]);
-                }))
-
-            } catch (error) {
-                const err = new Error(error.message);
-                throw err;
-            }
-
-            // await pool.query('COMMIT')
-
-            res.json({
-                success: true,
-                result_message: 'interdeposito y stock actualizados de forma exitosa!',
-                result_rows: result.rowCount,
-                result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
-                result_data: result.rows[0],
-            });
+                await pool.query(query, [id, insumo.id, insumo.cantidad, insumo.estado, insumo.observacion]);
 
 
-        } else {
-            // await pool.query('COMMIT')
-
-            let result = await pool.query(query, [estado, id]);
-
-            if (result.rowCount == 0) {
-                const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
-                error.statusCode = 400;
-                throw error;
-            }
-
-            res.json({
-                success: true,
-                result_message: 'interdeposito actualizado de forma exitosa!',
-                result_rows: result.rowCount,
-                result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
-                result_data: result.rows,
-            });
+            }))
+        } catch (error) {
+            const err = new Error(error.message);
+            throw err;
         }
+
+        // try {
+        //     await Promise.all(Array.from(insumos).map(async (insumo) => {
+        //     }))
+
+        // } catch (error) {
+        //     const err = new Error(error.message);
+        //     throw err;
+        // }
+
+        // await pool.query('COMMIT')
+
+        res.json({
+            success: true,
+            result_message: 'interdeposito actualizado de forma exitosa!',
+            result_rows: result.rowCount,
+            result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
+            result_data: result.rows[0],
+        });
+
+
+        // } else {
+        //     // await pool.query('COMMIT')
+
+        //     let result = await pool.query(query, [estado, id]);
+
+        //     if (result.rowCount == 0) {
+        //         const error = new Error('No se encontró ningún registro con estado "pendiente" para actualizar.');
+        //         error.statusCode = 400;
+        //         throw error;
+        //     }
+
+        //     res.json({
+        //         success: true,
+        //         result_message: 'interdeposito actualizado de forma exitosa!',
+        //         result_rows: result.rowCount,
+        //         result_proceso: 'PUT ACTUALIZAR INTERDEPOSITO',
+        //         result_data: result.rows,
+        //     });
+        // }
 
     } catch (error) {
 
@@ -1247,24 +1242,24 @@ router.post("/movimiento", async (req, res) => {
         let queryUpdateOrigin = "UPDATE insumo SET cantidad = cantidad - $1 WHERE id= $2";
         await Promise.all(
             Array.from(insumos).map(async (insumo) => {
-            const resultDataInsumo = await pool.query(queryInsumo, [insumo.id])
-            if (resultDataInsumo.rowCount == 0) {
-                const error = new Error('No fue posible obtener los datos del insumo: ', insumo.nombre_insumo);
-                error.statusCode = 404;
-                throw error;
-            }
-            if(insumo.cantidad > resultDataInsumo.rows[0].cantidad){
-                const error = new Error(`La cantidad del insumo ${insumo.nombre_insumo} del formulario, supera la cantidad disponible en el stock`);
-                error.statusCode = 400;
-                throw error;
-            }
-            let result = await pool.query(queryUpdateOrigin, [parseInt(insumo.cantidad), insumo.id]);
-            if (result.rowCount == 0) {
-                const error = new Error('No fue posible efectuar la actualizacion');
-                error.statusCode = 400;
-                throw error;
-            }
-        }));
+                const resultDataInsumo = await pool.query(queryInsumo, [insumo.id])
+                if (resultDataInsumo.rowCount == 0) {
+                    const error = new Error('No fue posible obtener los datos del insumo: ', insumo.nombre_insumo);
+                    error.statusCode = 404;
+                    throw error;
+                }
+                if (insumo.cantidad > resultDataInsumo.rows[0].cantidad) {
+                    const error = new Error(`La cantidad del insumo ${insumo.nombre_insumo} del formulario, supera la cantidad disponible en el stock`);
+                    error.statusCode = 400;
+                    throw error;
+                }
+                let result = await pool.query(queryUpdateOrigin, [parseInt(insumo.cantidad), insumo.id]);
+                if (result.rowCount == 0) {
+                    const error = new Error('No fue posible efectuar la actualizacion');
+                    error.statusCode = 400;
+                    throw error;
+                }
+            }));
 
         movimiento = movimientoResult.rows[0]
         query = `INSERT INTO materiales(material, unidad_material, cantidad, movimiento_id)
@@ -1371,12 +1366,12 @@ router.get("/movimiento/:id", async (req, res) => {
         result = await pool.query(query, [id]);
 
         if (result.rows.length == 0) {
-            const error = new Error("No existe un movimiento con id: " ,id);
+            const error = new Error("No existe un movimiento con id: ", id);
             error.statusCode = 404;
             throw error;
-        } 
+        }
 
-        const movimiento = result.rows[0] 
+        const movimiento = result.rows[0]
         delete movimiento.punto_control_id
 
         try {
@@ -1394,10 +1389,10 @@ router.get("/movimiento/:id", async (req, res) => {
             error.statusCode = 404;
             throw error;
         }
-        
+
         const materiales = result.rows
 
-        movimiento.materiales = materiales 
+        movimiento.materiales = materiales
 
         res.json({
             success: true,
