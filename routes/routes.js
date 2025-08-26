@@ -676,25 +676,25 @@ router.get("/insumo/", async (req, res) => {
 
         result = await pool.query(query, [punto_control]);
 
-        if (result.rows.length == 0) {
-            const error = new Error("No se encontraron insumos por mostrar");
-            error.statusCode = 404;
-            throw error;
-        } else {
-            let response = {}
-            categorias.rows.forEach(c => {
-                insumos = result.rows.filter(i => i.categoria_id == c.id)
-                response[c.nombre_categoria] = insumos
-            });
-            res.json({
-                success: true,
-                status: 200,
-                result_message: 'LISTA DE INSUMOS OBTENIDA',
-                result_rows: result.rowCount,
-                result_proceso: 'GET ALL INSUMOS',
-                result_data: response
-            })
-        }
+        // if (result.rows.length == 0) {
+        //     const error = new Error("No se encontraron insumos por mostrar");
+        //     error.statusCode = 404;
+        //     throw error;
+        // } else {
+        let response = {}
+        categorias.rows.forEach(c => {
+            insumos = result.rows.filter(i => i.categoria_id == c.id)
+            response[c.nombre_categoria] = insumos
+        });
+        res.json({
+            success: true,
+            status: 200,
+            result_message: 'LISTA DE INSUMOS OBTENIDA',
+            result_rows: result.rowCount,
+            result_proceso: 'GET ALL INSUMOS',
+            result_data: response
+        })
+        // }
 
     } catch (error) {
         res.status(error.statusCode || 500).json({
